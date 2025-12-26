@@ -1,0 +1,9 @@
+gradio
+torch
+torchvision
+opencv-python-headless
+paddlepaddle
+paddleocr
+deep-translator
+numpy
+Pillow

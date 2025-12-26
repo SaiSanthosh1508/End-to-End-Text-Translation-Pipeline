@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+.gradio/
+flagged/
+debug_crops/
+*.png
+*.jpg
+*.webp
+# Keep your specific example images, ignore others
+!arabic.jpg
+!korean.jpg
+!hindi.jpg
+!ultralytics/assets/*.jpg
