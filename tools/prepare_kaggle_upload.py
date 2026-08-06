@@ -15,6 +15,11 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--subset-dir", required=True)
     parser.add_argument("--output-dir", required=True)
+    parser.add_argument(
+        "--project-root",
+        default=Path(__file__).resolve().parents[1],
+        type=Path,
+    )
     return parser.parse_args()
 
 
@@ -75,7 +80,7 @@ def main() -> int:
     args = parse_args()
     subset_dir = Path(args.subset_dir)
     output_dir = Path(args.output_dir)
-    root = Path("/Users/saisanthosh/Documents/paper-exp/End-to-End-Text-Translation-Pipeline")
+    root = args.project_root.resolve()
 
     gold_csv = subset_dir / "english_only_master_annotation_gold.csv"
     scores_csv = subset_dir / "final_dataset_scores.csv"

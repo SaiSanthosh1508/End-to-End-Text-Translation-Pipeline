@@ -21,6 +21,11 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--gold-sheet", required=True)
     parser.add_argument("--output-csv", required=True)
+    parser.add_argument(
+        "--project-root",
+        default=Path(__file__).resolve().parents[1],
+        type=Path,
+    )
     parser.add_argument("--limit", type=int, default=0)
     parser.add_argument("--target-language", default="en")
     parser.add_argument("--overwrite", action="store_true")
@@ -74,7 +79,7 @@ def ordered_output_rows(
 
 def main() -> int:
     args = parse_args()
-    root = Path("/Users/saisanthosh/Documents/paper-exp/End-to-End-Text-Translation-Pipeline")
+    root = args.project_root.resolve()
     gold_sheet = Path(args.gold_sheet)
     output_csv = Path(args.output_csv)
 

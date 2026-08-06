@@ -1,3 +1,0 @@
-total_rows=52
-accepted=38
-unresolved=14

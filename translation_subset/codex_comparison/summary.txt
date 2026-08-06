@@ -1,5 +1,0 @@
-total_rows=160
-agreed_low_low=108
-translation_mismatch=37
-review_flagged=32
-flagged_rows=52

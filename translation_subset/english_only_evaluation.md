@@ -28,17 +28,12 @@ translation evaluation: `English`.
 
 ## Files
 
-- Working blank annotation sheet:
-  - [english_only_master_annotation.csv](/Users/saisanthosh/Documents/paper-exp/End-to-End-Text-Translation-Pipeline/translation_subset/english_only_master_annotation.csv)
 - Final gold annotation sheet:
   - [english_only_master_annotation_gold.csv](/Users/saisanthosh/Documents/paper-exp/End-to-End-Text-Translation-Pipeline/translation_subset/english_only_master_annotation_gold.csv)
 - Saved HF Space evaluation:
   - [hf_space_eval_full.csv](/Users/saisanthosh/Documents/paper-exp/End-to-End-Text-Translation-Pipeline/translation_subset/hf_space_eval_full.csv)
-- Saved HF Space evaluation with chrF:
-  - [hf_space_eval_full_chrf.csv](/Users/saisanthosh/Documents/paper-exp/End-to-End-Text-Translation-Pipeline/translation_subset/hf_space_eval_full_chrf.csv)
-- Dataset-specific sheets:
-  - [MLT sheet](/Users/saisanthosh/Documents/paper-exp/End-to-End-Text-Translation-Pipeline/translation_subset/mlt_from_zip/annotation_sheet.csv)
-  - [ReCTS sheet](/Users/saisanthosh/Documents/paper-exp/End-to-End-Text-Translation-Pipeline/translation_subset/rects_from_zips/annotation_sheet.csv)
+- Saved normalized-text chrF scores:
+  - [hf_space_eval_full_chrf_normalized.csv](/Users/saisanthosh/Documents/paper-exp/End-to-End-Text-Translation-Pipeline/translation_subset/hf_space_eval_full_chrf_normalized.csv)
 
 ## Current Status
 
@@ -54,9 +49,9 @@ The current saved evaluation run completed `160/160` rows successfully.
 - Overall completed rows: `160/160`
 - Exact normalized matches: `31`
 - Partial contains matches: `41`
-- Average chrF: `0.3197`
-- `ICDAR MLT-2019`: `140/140` completed, `29` exact, `39` contains, avg chrF `0.3236`
-- `ReCTS`: `20/20` completed, `2` exact, `2` contains, avg chrF `0.2921`
+- Average normalized chrF across all `160` rows: `0.3647`
+- Average normalized chrF across the `31` exact-match rows: `0.8118`
+- Final proportional top-40 subset average normalized chrF: `0.8108`
 
 ## Paper-Safe Methodology Text
 
