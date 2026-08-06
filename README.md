@@ -56,6 +56,12 @@ The paper itself reports benchmarked text detection and text recognition results
 
 These `chrF` values are supplementary repository results computed on the released English-reference subset. They are not official ICDAR/ReCTS leaderboard metrics and should be reported separately from the detection and recognition benchmark tables in the paper.
 
+Released dataset links:
+
+- Kaggle dataset: [https://www.kaggle.com/datasets/rishiksaisanthosh/scene-text-translation-english-eval-subset](https://www.kaggle.com/datasets/rishiksaisanthosh/scene-text-translation-english-eval-subset)
+- Repository final top-40 subset: [`final_dataset_only/`](./final_dataset_only)
+- Kaggle-ready package in this repository: [`kaggle_upload/`](./kaggle_upload)
+
 The repository includes:
 
 - `translation_subset/english_only_master_annotation_gold.csv`: completed English-reference gold sheet for the current `160`-image supplementary subset.
