@@ -1,0 +1,161 @@
+source_dataset,split,image_id,class_name,image_member,label_member,gt_member,selector_score,source_text_reference,target_language,target_translation_reference,annotator_1,annotator_2,notes
+ICDAR MLT-2019,held_out_from_train,tr_img_00739,Arabic,TrainImages/TrainImages/tr_img_00739.jpg,,TrainGT/TrainGT/tr_img_00739.txt,96.9284,مغلق,en,,,,مغلق
+ICDAR MLT-2019,held_out_from_train,tr_img_00782,Arabic,TrainImages/TrainImages/tr_img_00782.jpg,,TrainGT/TrainGT/tr_img_00782.txt,93.9742,رمّانة,en,,,,رمّانة
+ICDAR MLT-2019,held_out_from_train,tr_img_00135,Arabic,TrainImages/TrainImages/tr_img_00135.jpg,,TrainGT/TrainGT/tr_img_00135.txt,93.8287,الثورة,en,,,,الثورة
+ICDAR MLT-2019,held_out_from_train,tr_img_00717,Arabic,TrainImages/TrainImages/tr_img_00717.jpg,,TrainGT/TrainGT/tr_img_00717.txt,93.508,القطيفة,en,,,,القطيفة
+ICDAR MLT-2019,held_out_from_train,tr_img_00021,Arabic,TrainImages/TrainImages/tr_img_00021.jpg,,TrainGT/TrainGT/tr_img_00021.txt,89.7128,بحب بلدى,en,,,,بحب
+ICDAR MLT-2019,held_out_from_train,tr_img_00795,Arabic,TrainImages/TrainImages/tr_img_00795.jpg,,TrainGT/TrainGT/tr_img_00795.txt,89.2205,مفتوح,en,,,,مفتوح
+ICDAR MLT-2019,held_out_from_train,tr_img_00744,Arabic,TrainImages/TrainImages/tr_img_00744.jpg,,TrainGT/TrainGT/tr_img_00744.txt,89.0635,الطفل مدينة,en,,,,مدينة
+ICDAR MLT-2019,held_out_from_train,tr_img_00617,Arabic,TrainImages/TrainImages/tr_img_00617.jpg,,TrainGT/TrainGT/tr_img_00617.txt,87.8469,رويال,en,,,,رويال
+ICDAR MLT-2019,held_out_from_train,tr_img_00544,Arabic,TrainImages/TrainImages/tr_img_00544.jpg,,TrainGT/TrainGT/tr_img_00544.txt,86.9077,البركة,en,,,,البركة
+ICDAR MLT-2019,held_out_from_train,tr_img_00061,Arabic,TrainImages/TrainImages/tr_img_00061.png,,TrainGT/TrainGT/tr_img_00061.txt,86.2759,أقطع وشك,en,,,,أقطع
+ICDAR MLT-2019,held_out_from_train,tr_img_00056,Arabic,TrainImages/TrainImages/tr_img_00056.jpg,,TrainGT/TrainGT/tr_img_00056.txt,85.2926,البلدية قصر,en,,,,قصر
+ICDAR MLT-2019,held_out_from_train,tr_img_00069,Arabic,TrainImages/TrainImages/tr_img_00069.jpg,,TrainGT/TrainGT/tr_img_00069.txt,83.9451,ادْفَع البَابْ,en,,,,ادْفَع
+ICDAR MLT-2019,held_out_from_train,tr_img_00410,Arabic,TrainImages/TrainImages/tr_img_00410.png,,TrainGT/TrainGT/tr_img_00410.txt,83.9266,عمار اثاث,en,,,,اثاث
+ICDAR MLT-2019,held_out_from_train,tr_img_00427,Arabic,TrainImages/TrainImages/tr_img_00427.jpg,,TrainGT/TrainGT/tr_img_00427.txt,82.7361,حلو كسكروت,en,,,,كسكروت
+ICDAR MLT-2019,held_out_from_train,tr_img_00432,Arabic,TrainImages/TrainImages/tr_img_00432.jpg,,TrainGT/TrainGT/tr_img_00432.txt,82.4502,هارديز,en,,,,هارديز
+ICDAR MLT-2019,held_out_from_train,tr_img_00792,Arabic,TrainImages/TrainImages/tr_img_00792.jpg,,TrainGT/TrainGT/tr_img_00792.txt,82.4426,التَعليميَة المهَن نقَابةْ,en,,,,نقَابةْ
+ICDAR MLT-2019,held_out_from_train,tr_img_00578,Arabic,TrainImages/TrainImages/tr_img_00578.jpg,,TrainGT/TrainGT/tr_img_00578.txt,82.3057,التجاريين نقابة,en,,,,نقابة
+ICDAR MLT-2019,held_out_from_train,tr_img_00632,Arabic,TrainImages/TrainImages/tr_img_00632.jpg,,TrainGT/TrainGT/tr_img_00632.txt,82.0929,رمل,en,,,,رمل
+ICDAR MLT-2019,held_out_from_train,tr_img_00679,Arabic,TrainImages/TrainImages/tr_img_00679.jpg,,TrainGT/TrainGT/tr_img_00679.txt,81.8006,المنصورة,en,,,,المنصورة
+ICDAR MLT-2019,held_out_from_train,tr_img_00946,Arabic,TrainImages/TrainImages/tr_img_00946.png,,TrainGT/TrainGT/tr_img_00946.txt,81.6793,روضة الصفاء,en,,,,روضة
+ICDAR MLT-2019,held_out_from_train,tr_img_01804,Latin,TrainImages/TrainImages/tr_img_01804.jpg,,TrainGT/TrainGT/tr_img_01804.txt,97.966,115,en,,,,115
+ICDAR MLT-2019,held_out_from_train,tr_img_01835,Latin,TrainImages/TrainImages/tr_img_01835.jpg,,TrainGT/TrainGT/tr_img_01835.txt,97.2885,BBC,en,,,,BBC
+ICDAR MLT-2019,held_out_from_train,tr_img_01633,Latin,TrainImages/TrainImages/tr_img_01633.jpg,,TrainGT/TrainGT/tr_img_01633.txt,97.1389,61,en,,,,61
+ICDAR MLT-2019,held_out_from_train,tr_img_01530,Latin,TrainImages/TrainImages/tr_img_01530.jpg,,TrainGT/TrainGT/tr_img_01530.txt,97.0669,24,en,,,,24
+ICDAR MLT-2019,held_out_from_train,tr_img_01081,Latin,TrainImages/TrainImages/tr_img_01081.jpg,,TrainGT/TrainGT/tr_img_01081.txt,97.0058,EAT,en,,,,EAT
+ICDAR MLT-2019,held_out_from_train,tr_img_01121,Latin,TrainImages/TrainImages/tr_img_01121.jpg,,TrainGT/TrainGT/tr_img_01121.txt,96.8723,998,en,,,,998
+ICDAR MLT-2019,held_out_from_train,tr_img_01052,Latin,TrainImages/TrainImages/tr_img_01052.jpg,,TrainGT/TrainGT/tr_img_01052.txt,96.6448,314,en,,,,314
+ICDAR MLT-2019,held_out_from_train,tr_img_01644,Latin,TrainImages/TrainImages/tr_img_01644.jpg,,TrainGT/TrainGT/tr_img_01644.txt,96.6425,46,en,,,,46
+ICDAR MLT-2019,held_out_from_train,tr_img_01441,Latin,TrainImages/TrainImages/tr_img_01441.jpg,,TrainGT/TrainGT/tr_img_01441.txt,96.4869,120,en,,,,120
+ICDAR MLT-2019,held_out_from_train,tr_img_01817,Latin,TrainImages/TrainImages/tr_img_01817.jpg,,TrainGT/TrainGT/tr_img_01817.txt,96.2203,42,en,,,,42
+ICDAR MLT-2019,held_out_from_train,tr_img_01220,Latin,TrainImages/TrainImages/tr_img_01220.jpg,,TrainGT/TrainGT/tr_img_01220.txt,95.9777,85,en,,,,85
+ICDAR MLT-2019,held_out_from_train,tr_img_01806,Latin,TrainImages/TrainImages/tr_img_01806.jpg,,TrainGT/TrainGT/tr_img_01806.txt,95.1587,16781,en,,,,16781
+ICDAR MLT-2019,held_out_from_train,tr_img_02853,Latin,TrainImages/TrainImages/tr_img_02853.jpg,,TrainGT/TrainGT/tr_img_02853.txt,94.3858,ateliers,en,,,,ateliers
+ICDAR MLT-2019,held_out_from_train,tr_img_01354,Latin,TrainImages/TrainImages/tr_img_01354.jpg,,TrainGT/TrainGT/tr_img_01354.txt,94.3728,2421,en,,,,2421
+ICDAR MLT-2019,held_out_from_train,tr_img_01429,Latin,TrainImages/TrainImages/tr_img_01429.jpg,,TrainGT/TrainGT/tr_img_01429.txt,93.2247,Hospital,en,,,,Hospital
+ICDAR MLT-2019,held_out_from_train,tr_img_01024,Latin,TrainImages/TrainImages/tr_img_01024.jpg,,TrainGT/TrainGT/tr_img_01024.txt,93.0664,JobCenter,en,,,,JobCenter
+ICDAR MLT-2019,held_out_from_train,tr_img_02991,Latin,TrainImages/TrainImages/tr_img_02991.jpg,,TrainGT/TrainGT/tr_img_02991.txt,92.984,BOULANGER,en,,,,BOULANGER
+ICDAR MLT-2019,held_out_from_train,tr_img_01552,Latin,TrainImages/TrainImages/tr_img_01552.jpg,,TrainGT/TrainGT/tr_img_01552.txt,92.9068,LeVI'S R,en,,,,LeVI'S
+ICDAR MLT-2019,held_out_from_train,tr_img_01455,Latin,TrainImages/TrainImages/tr_img_01455.jpg,,TrainGT/TrainGT/tr_img_01455.txt,92.8935,Google,en,,,,Google
+ICDAR MLT-2019,held_out_from_train,tr_img_01112,Latin,TrainImages/TrainImages/tr_img_01112.jpg,,TrainGT/TrainGT/tr_img_01112.txt,92.5195,8712,en,,,,8712
+ICDAR MLT-2019,held_out_from_train,tr_img_03248,Chinese,TrainImages/TrainImages/tr_img_03248.jpg,,TrainGT/TrainGT/tr_img_03248.txt,95.8756,这儿是哪儿,en,,,,这儿是哪儿
+ICDAR MLT-2019,held_out_from_train,tr_img_03063,Chinese,TrainImages/TrainImages/tr_img_03063.jpg,,TrainGT/TrainGT/tr_img_03063.txt,95.6298,易酷网吧,en,,,,易酷网吧
+ICDAR MLT-2019,held_out_from_train,tr_img_03851,Chinese,TrainImages/TrainImages/tr_img_03851.jpg,,TrainGT/TrainGT/tr_img_03851.txt,94.3113,建于2000,en,,,,建于2000
+ICDAR MLT-2019,held_out_from_train,tr_img_03653,Chinese,TrainImages/TrainImages/tr_img_03653.jpg,,TrainGT/TrainGT/tr_img_03653.txt,94.0752,员工平安,en,,,,员工平安
+ICDAR MLT-2019,held_out_from_train,tr_img_03315,Chinese,TrainImages/TrainImages/tr_img_03315.jpg,,TrainGT/TrainGT/tr_img_03315.txt,94.0198,中航科技大,en,,,,中航科技大
+ICDAR MLT-2019,held_out_from_train,tr_img_03149,Chinese,TrainImages/TrainImages/tr_img_03149.jpg,,TrainGT/TrainGT/tr_img_03149.txt,93.5979,牛肉汤碗蒸菜,en,,,,牛肉汤碗蒸菜
+ICDAR MLT-2019,held_out_from_train,tr_img_03297,Chinese,TrainImages/TrainImages/tr_img_03297.jpg,,TrainGT/TrainGT/tr_img_03297.txt,92.8723,理想北大美梦成真,en,,,,理想北大美梦成真
+ICDAR MLT-2019,held_out_from_train,tr_img_03871,Chinese,TrainImages/TrainImages/tr_img_03871.jpg,,TrainGT/TrainGT/tr_img_03871.txt,92.7151,老蒸笼,en,,,,老蒸笼
+ICDAR MLT-2019,held_out_from_train,tr_img_03716,Chinese,TrainImages/TrainImages/tr_img_03716.jpg,,TrainGT/TrainGT/tr_img_03716.txt,92.5391,迎奥,en,,,,迎奥
+ICDAR MLT-2019,held_out_from_train,tr_img_03474,Chinese,TrainImages/TrainImages/tr_img_03474.jpg,,TrainGT/TrainGT/tr_img_03474.txt,92.0954,岷江桥,en,,,,岷江桥
+ICDAR MLT-2019,held_out_from_train,tr_img_03806,Chinese,TrainImages/TrainImages/tr_img_03806.jpg,,TrainGT/TrainGT/tr_img_03806.txt,91.0904,老天津卫炸酱面,en,,,,老天津卫炸酱面
+ICDAR MLT-2019,held_out_from_train,tr_img_03148,Chinese,TrainImages/TrainImages/tr_img_03148.jpg,,TrainGT/TrainGT/tr_img_03148.txt,91.0385,神木車站,en,,,,神木車站
+ICDAR MLT-2019,held_out_from_train,tr_img_03914,Chinese,TrainImages/TrainImages/tr_img_03914.jpg,,TrainGT/TrainGT/tr_img_03914.txt,91.0362,欢迎你们参加全国高考,en,,,,欢迎你们参加全国高考
+ICDAR MLT-2019,held_out_from_train,tr_img_03372,Chinese,TrainImages/TrainImages/tr_img_03372.jpg,,TrainGT/TrainGT/tr_img_03372.txt,90.9495,北京双舟台球俱乐部,en,,,,北京双舟台球俱乐部
+ICDAR MLT-2019,held_out_from_train,tr_img_03402,Chinese,TrainImages/TrainImages/tr_img_03402.jpg,,TrainGT/TrainGT/tr_img_03402.txt,90.1554,觀雲白建勑,en,,,,觀雲白建勑
+ICDAR MLT-2019,held_out_from_train,tr_img_03159,Chinese,TrainImages/TrainImages/tr_img_03159.jpg,,TrainGT/TrainGT/tr_img_03159.txt,89.9705,全国现代农作物种业工作会议,en,,,,全国现代农作物种业工作会议
+ICDAR MLT-2019,held_out_from_train,tr_img_03218,Chinese,TrainImages/TrainImages/tr_img_03218.jpg,,TrainGT/TrainGT/tr_img_03218.txt,89.9631,"高三·十六班 妈,我要回来!",en,,,,"妈,我要回来!"
+ICDAR MLT-2019,held_out_from_train,tr_img_03887,Chinese,TrainImages/TrainImages/tr_img_03887.jpg,,TrainGT/TrainGT/tr_img_03887.txt,89.6047,消防通道 停车,en,,,,消防通道
+ICDAR MLT-2019,held_out_from_train,tr_img_03505,Chinese,TrainImages/TrainImages/tr_img_03505.jpg,,TrainGT/TrainGT/tr_img_03505.txt,89.2252,韵湘轩 湘菜,en,,,,韵湘轩
+ICDAR MLT-2019,held_out_from_train,tr_img_03893,Chinese,TrainImages/TrainImages/tr_img_03893.jpg,,TrainGT/TrainGT/tr_img_03893.txt,89.1517,"皇粮国税,不交有罪。",en,,,,"皇粮国税,不交有罪。"
+ICDAR MLT-2019,held_out_from_train,tr_img_05241,Korean,TrainImages/TrainImages/tr_img_05241.jpg,,TrainGT/TrainGT/tr_img_05241.txt,95.6587,비상전화,en,,,,비상전화
+ICDAR MLT-2019,held_out_from_train,tr_img_05675,Korean,TrainImages/TrainImages/tr_img_05675.jpg,,TrainGT/TrainGT/tr_img_05675.txt,94.6103,샤브샤브,en,,,,샤브샤브
+ICDAR MLT-2019,held_out_from_train,tr_img_05212,Korean,TrainImages/TrainImages/tr_img_05212.jpg,,TrainGT/TrainGT/tr_img_05212.txt,94.2841,우리은행,en,,,,우리은행
+ICDAR MLT-2019,held_out_from_train,tr_img_05984,Korean,TrainImages/TrainImages/tr_img_05984.jpg,,TrainGT/TrainGT/tr_img_05984.txt,92.9899,정숙,en,,,,정숙
+ICDAR MLT-2019,held_out_from_train,tr_img_05370,Korean,TrainImages/TrainImages/tr_img_05370.jpg,,TrainGT/TrainGT/tr_img_05370.txt,91.3728,담배,en,,,,담배
+ICDAR MLT-2019,held_out_from_train,tr_img_05012,Korean,TrainImages/TrainImages/tr_img_05012.jpg,,TrainGT/TrainGT/tr_img_05012.txt,91.126,홍보관,en,,,,홍보관
+ICDAR MLT-2019,held_out_from_train,tr_img_05083,Korean,TrainImages/TrainImages/tr_img_05083.jpg,,TrainGT/TrainGT/tr_img_05083.txt,91.1086,"뻥,콩 튀겨드림",en,,,,"뻥,콩"
+ICDAR MLT-2019,held_out_from_train,tr_img_05755,Korean,TrainImages/TrainImages/tr_img_05755.jpg,,TrainGT/TrainGT/tr_img_05755.txt,90.861,미래하우스,en,,,,미래하우스
+ICDAR MLT-2019,held_out_from_train,tr_img_05805,Korean,TrainImages/TrainImages/tr_img_05805.jpg,,TrainGT/TrainGT/tr_img_05805.txt,90.4716,한국현대 의상박물관,en,,,,한국현대
+ICDAR MLT-2019,held_out_from_train,tr_img_05054,Korean,TrainImages/TrainImages/tr_img_05054.jpg,,TrainGT/TrainGT/tr_img_05054.txt,90.1694,빈그릇,en,,,,빈그릇
+ICDAR MLT-2019,held_out_from_train,tr_img_05225,Korean,TrainImages/TrainImages/tr_img_05225.jpg,,TrainGT/TrainGT/tr_img_05225.txt,90.0996,팔리아멘트 수퍼슬림,en,,,,팔리아멘트
+ICDAR MLT-2019,held_out_from_train,tr_img_05299,Korean,TrainImages/TrainImages/tr_img_05299.jpg,,TrainGT/TrainGT/tr_img_05299.txt,90.0477,항의길,en,,,,항의길
+ICDAR MLT-2019,held_out_from_train,tr_img_05658,Korean,TrainImages/TrainImages/tr_img_05658.jpg,,TrainGT/TrainGT/tr_img_05658.txt,89.5721,다양한,en,,,,다양한
+ICDAR MLT-2019,held_out_from_train,tr_img_05144,Korean,TrainImages/TrainImages/tr_img_05144.jpg,,TrainGT/TrainGT/tr_img_05144.txt,89.4496,"역주행,",en,,,,"역주행,"
+ICDAR MLT-2019,held_out_from_train,tr_img_05456,Korean,TrainImages/TrainImages/tr_img_05456.jpg,,TrainGT/TrainGT/tr_img_05456.txt,89.2779,머리고기 해물파전,en,,,,머리고기
+ICDAR MLT-2019,held_out_from_train,tr_img_05308,Korean,TrainImages/TrainImages/tr_img_05308.jpg,,TrainGT/TrainGT/tr_img_05308.txt,89.2308,흥사단,en,,,,흥사단
+ICDAR MLT-2019,held_out_from_train,tr_img_05316,Korean,TrainImages/TrainImages/tr_img_05316.jpg,,TrainGT/TrainGT/tr_img_05316.txt,89.2159,코코리빙텔,en,,,,코코리빙텔
+ICDAR MLT-2019,held_out_from_train,tr_img_05200,Korean,TrainImages/TrainImages/tr_img_05200.jpg,,TrainGT/TrainGT/tr_img_05200.txt,89.1005,월풀빨래방,en,,,,월풀빨래방
+ICDAR MLT-2019,held_out_from_train,tr_img_05134,Korean,TrainImages/TrainImages/tr_img_05134.jpg,,TrainGT/TrainGT/tr_img_05134.txt,89.0964,소화기함,en,,,,소화기함
+ICDAR MLT-2019,held_out_from_train,tr_img_05742,Korean,TrainImages/TrainImages/tr_img_05742.jpg,,TrainGT/TrainGT/tr_img_05742.txt,88.8854,귀걸이,en,,,,귀걸이
+ICDAR MLT-2019,held_out_from_train,tr_img_06975,Japanese,TrainImages/TrainImages/tr_img_06975.jpg,,TrainGT/TrainGT/tr_img_06975.txt,96.5608,山田,en,,,,山田
+ICDAR MLT-2019,held_out_from_train,tr_img_06623,Japanese,TrainImages/TrainImages/tr_img_06623.jpg,,TrainGT/TrainGT/tr_img_06623.txt,93.2816,ココ入る,en,,,,ココ入る
+ICDAR MLT-2019,held_out_from_train,tr_img_06738,Japanese,TrainImages/TrainImages/tr_img_06738.jpg,,TrainGT/TrainGT/tr_img_06738.txt,92.0162,左折出庫,en,,,,左折出庫
+ICDAR MLT-2019,held_out_from_train,tr_img_06150,Japanese,TrainImages/TrainImages/tr_img_06150.jpg,,TrainGT/TrainGT/tr_img_06150.txt,91.9974,深-144,en,,,,深-144
+ICDAR MLT-2019,held_out_from_train,tr_img_06672,Japanese,TrainImages/TrainImages/tr_img_06672.jpg,,TrainGT/TrainGT/tr_img_06672.txt,91.4811,合流注意,en,,,,合流注意
+ICDAR MLT-2019,held_out_from_train,tr_img_06962,Japanese,TrainImages/TrainImages/tr_img_06962.jpg,,TrainGT/TrainGT/tr_img_06962.txt,91.2363,ビデオ,en,,,,ビデオ
+ICDAR MLT-2019,held_out_from_train,tr_img_06693,Japanese,TrainImages/TrainImages/tr_img_06693.jpg,,TrainGT/TrainGT/tr_img_06693.txt,90.9928,止マレ,en,,,,止マレ
+ICDAR MLT-2019,held_out_from_train,tr_img_06147,Japanese,TrainImages/TrainImages/tr_img_06147.jpg,,TrainGT/TrainGT/tr_img_06147.txt,89.7262,まんが喫茶 受付B1,en,,,,まんが喫茶
+ICDAR MLT-2019,held_out_from_train,tr_img_06430,Japanese,TrainImages/TrainImages/tr_img_06430.jpg,,TrainGT/TrainGT/tr_img_06430.txt,88.8859,佐ムホ,en,,,,佐ムホ
+ICDAR MLT-2019,held_out_from_train,tr_img_06383,Japanese,TrainImages/TrainImages/tr_img_06383.jpg,,TrainGT/TrainGT/tr_img_06383.txt,88.8382,館 水車町6丁目,en,,,,館
+ICDAR MLT-2019,held_out_from_train,tr_img_06008,Japanese,TrainImages/TrainImages/tr_img_06008.jpg,,TrainGT/TrainGT/tr_img_06008.txt,88.4565,用店デえ,en,,,,用店デえ
+ICDAR MLT-2019,held_out_from_train,tr_img_06997,Japanese,TrainImages/TrainImages/tr_img_06997.jpg,,TrainGT/TrainGT/tr_img_06997.txt,88.1551,左側通行,en,,,,左側通行
+ICDAR MLT-2019,held_out_from_train,tr_img_06942,Japanese,TrainImages/TrainImages/tr_img_06942.jpg,,TrainGT/TrainGT/tr_img_06942.txt,87.564,標凖発車時刻表,en,,,,標凖発車時刻表
+ICDAR MLT-2019,held_out_from_train,tr_img_06203,Japanese,TrainImages/TrainImages/tr_img_06203.jpg,,TrainGT/TrainGT/tr_img_06203.txt,86.7975,はり紙禁止 静岡県警察本部,en,,,,静岡県警察本部
+ICDAR MLT-2019,held_out_from_train,tr_img_06305,Japanese,TrainImages/TrainImages/tr_img_06305.jpg,,TrainGT/TrainGT/tr_img_06305.txt,86.6196,博多えメン 長浜や,en,,,,博多えメン
+ICDAR MLT-2019,held_out_from_train,tr_img_06881,Japanese,TrainImages/TrainImages/tr_img_06881.jpg,,TrainGT/TrainGT/tr_img_06881.txt,86.4417,日本の酒 シフク,en,,,,日本の酒
+ICDAR MLT-2019,held_out_from_train,tr_img_06501,Japanese,TrainImages/TrainImages/tr_img_06501.jpg,,TrainGT/TrainGT/tr_img_06501.txt,85.928,ロンヅエヴイテ 元住吉,en,,,,ロンヅエヴイテ
+ICDAR MLT-2019,held_out_from_train,tr_img_06166,Japanese,TrainImages/TrainImages/tr_img_06166.jpg,,TrainGT/TrainGT/tr_img_06166.txt,85.8417,JR東日本,en,,,,JR東日本
+ICDAR MLT-2019,held_out_from_train,tr_img_06761,Japanese,TrainImages/TrainImages/tr_img_06761.jpg,,TrainGT/TrainGT/tr_img_06761.txt,85.6303,幾度,en,,,,幾度
+ICDAR MLT-2019,held_out_from_train,tr_img_06616,Japanese,TrainImages/TrainImages/tr_img_06616.jpg,,TrainGT/TrainGT/tr_img_06616.txt,85.6031,きょう、 信託はじめました,en,,,,きょう、
+ICDAR MLT-2019,held_out_from_train,tr_img_08389,Bangla,TrainImages/TrainImages/tr_img_08389.jpg,,TrainGT/TrainGT/tr_img_08389.txt,93.798,জেরক্স,en,,,,জেরক্স
+ICDAR MLT-2019,held_out_from_train,tr_img_08082,Bangla,TrainImages/TrainImages/tr_img_08082.jpg,,TrainGT/TrainGT/tr_img_08082.txt,93.5822,সাইকেল,en,,,,সাইকেল
+ICDAR MLT-2019,held_out_from_train,tr_img_08288,Bangla,TrainImages/TrainImages/tr_img_08288.jpg,,TrainGT/TrainGT/tr_img_08288.txt,93.0456,নটরাজ,en,,,,নটরাজ
+ICDAR MLT-2019,held_out_from_train,tr_img_08060,Bangla,TrainImages/TrainImages/tr_img_08060.jpg,,TrainGT/TrainGT/tr_img_08060.txt,92.6495,বেলঘরিয়া,en,,,,বেলঘরিয়া
+ICDAR MLT-2019,held_out_from_train,tr_img_08381,Bangla,TrainImages/TrainImages/tr_img_08381.jpg,,TrainGT/TrainGT/tr_img_08381.txt,92.3637,শ্রীগুরু,en,,,,শ্রীগুরু
+ICDAR MLT-2019,held_out_from_train,tr_img_08513,Bangla,TrainImages/TrainImages/tr_img_08513.jpg,,TrainGT/TrainGT/tr_img_08513.txt,91.9207,উন্নয়নের,en,,,,উন্নয়নের
+ICDAR MLT-2019,held_out_from_train,tr_img_08602,Bangla,TrainImages/TrainImages/tr_img_08602.jpg,,TrainGT/TrainGT/tr_img_08602.txt,91.8068,মানসী,en,,,,মানসী
+ICDAR MLT-2019,held_out_from_train,tr_img_08619,Bangla,TrainImages/TrainImages/tr_img_08619.jpg,,TrainGT/TrainGT/tr_img_08619.txt,91.6139,জেরক্স করা,en,,,,জেরক্স
+ICDAR MLT-2019,held_out_from_train,tr_img_08359,Bangla,TrainImages/TrainImages/tr_img_08359.jpg,,TrainGT/TrainGT/tr_img_08359.txt,90.9471,বিপ্লব,en,,,,বিপ্লব
+ICDAR MLT-2019,held_out_from_train,tr_img_08339,Bangla,TrainImages/TrainImages/tr_img_08339.jpg,,TrainGT/TrainGT/tr_img_08339.txt,90.7346,বিবেকানন্দ,en,,,,বিবেকানন্দ
+ICDAR MLT-2019,held_out_from_train,tr_img_08402,Bangla,TrainImages/TrainImages/tr_img_08402.jpg,,TrainGT/TrainGT/tr_img_08402.txt,90.5395,নিরালা,en,,,,নিরালা
+ICDAR MLT-2019,held_out_from_train,tr_img_08785,Bangla,TrainImages/TrainImages/tr_img_08785.jpg,,TrainGT/TrainGT/tr_img_08785.txt,90.2695,পান্তউ,en,,,,পান্তউ
+ICDAR MLT-2019,held_out_from_train,tr_img_08208,Bangla,TrainImages/TrainImages/tr_img_08208.jpg,,TrainGT/TrainGT/tr_img_08208.txt,90.1727,বেলঘরিয়া,en,,,,বেলঘরিয়া
+ICDAR MLT-2019,held_out_from_train,tr_img_08998,Bangla,TrainImages/TrainImages/tr_img_08998.jpg,,TrainGT/TrainGT/tr_img_08998.txt,89.7843,সুমার্ট,en,,,,সুমার্ট
+ICDAR MLT-2019,held_out_from_train,tr_img_08886,Bangla,TrainImages/TrainImages/tr_img_08886.jpg,,TrainGT/TrainGT/tr_img_08886.txt,89.4529,জনপ্রিয় বস্ত্রালয়,en,,,,জনপ্রিয়
+ICDAR MLT-2019,held_out_from_train,tr_img_08995,Bangla,TrainImages/TrainImages/tr_img_08995.jpg,,TrainGT/TrainGT/tr_img_08995.txt,89.0773,পৌরসভা বিরাটি,en,,,,পৌরসভা
+ICDAR MLT-2019,held_out_from_train,tr_img_08116,Bangla,TrainImages/TrainImages/tr_img_08116.jpg,,TrainGT/TrainGT/tr_img_08116.txt,88.9018,কমলা,en,,,,কমলা
+ICDAR MLT-2019,held_out_from_train,tr_img_08213,Bangla,TrainImages/TrainImages/tr_img_08213.jpg,,TrainGT/TrainGT/tr_img_08213.txt,88.8214,বই,en,,,,বই
+ICDAR MLT-2019,held_out_from_train,tr_img_08144,Bangla,TrainImages/TrainImages/tr_img_08144.jpg,,TrainGT/TrainGT/tr_img_08144.txt,88.7513,বিধাননগর চলো,en,,,,চলো
+ICDAR MLT-2019,held_out_from_train,tr_img_08525,Bangla,TrainImages/TrainImages/tr_img_08525.jpg,,TrainGT/TrainGT/tr_img_08525.txt,88.5475,ফার্ণিচার,en,,,,ফার্ণিচার
+ICDAR MLT-2019,held_out_from_train,tr_img_09285,Hindi,TrainImages/TrainImages/tr_img_09285.jpg,,TrainGT/TrainGT/tr_img_09285.txt,96.847,पाम,en,,,,पाम
+ICDAR MLT-2019,held_out_from_train,tr_img_09277,Hindi,TrainImages/TrainImages/tr_img_09277.jpg,,TrainGT/TrainGT/tr_img_09277.txt,96.6005,अमूल,en,,,,अमूल
+ICDAR MLT-2019,held_out_from_train,tr_img_09359,Hindi,TrainImages/TrainImages/tr_img_09359.jpg,,TrainGT/TrainGT/tr_img_09359.txt,96.5317,वेणू,en,,,,वेणू
+ICDAR MLT-2019,held_out_from_train,tr_img_09913,Hindi,TrainImages/TrainImages/tr_img_09913.jpg,,TrainGT/TrainGT/tr_img_09913.txt,96.2804,औषधे,en,,,,औषधे
+ICDAR MLT-2019,held_out_from_train,tr_img_09832,Hindi,TrainImages/TrainImages/tr_img_09832.jpg,,TrainGT/TrainGT/tr_img_09832.txt,96.0697,बिमोड,en,,,,बिमोड
+ICDAR MLT-2019,held_out_from_train,tr_img_09496,Hindi,TrainImages/TrainImages/tr_img_09496.jpg,,TrainGT/TrainGT/tr_img_09496.txt,95.9501,मनाली,en,,,,मनाली
+ICDAR MLT-2019,held_out_from_train,tr_img_09485,Hindi,TrainImages/TrainImages/tr_img_09485.jpg,,TrainGT/TrainGT/tr_img_09485.txt,95.9239,बेकरी,en,,,,बेकरी
+ICDAR MLT-2019,held_out_from_train,tr_img_09158,Hindi,TrainImages/TrainImages/tr_img_09158.jpg,,TrainGT/TrainGT/tr_img_09158.txt,95.9159,औषधे,en,,,,औषधे
+ICDAR MLT-2019,held_out_from_train,tr_img_09167,Hindi,TrainImages/TrainImages/tr_img_09167.jpg,,TrainGT/TrainGT/tr_img_09167.txt,95.876,अमूल,en,,,,अमूल
+ICDAR MLT-2019,held_out_from_train,tr_img_09415,Hindi,TrainImages/TrainImages/tr_img_09415.jpg,,TrainGT/TrainGT/tr_img_09415.txt,95.8664,शालीन,en,,,,शालीन
+ICDAR MLT-2019,held_out_from_train,tr_img_09416,Hindi,TrainImages/TrainImages/tr_img_09416.jpg,,TrainGT/TrainGT/tr_img_09416.txt,95.8315,राजगड,en,,,,राजगड
+ICDAR MLT-2019,held_out_from_train,tr_img_09870,Hindi,TrainImages/TrainImages/tr_img_09870.jpg,,TrainGT/TrainGT/tr_img_09870.txt,95.6785,समतोल,en,,,,समतोल
+ICDAR MLT-2019,held_out_from_train,tr_img_09226,Hindi,TrainImages/TrainImages/tr_img_09226.jpg,,TrainGT/TrainGT/tr_img_09226.txt,95.4993,कासट,en,,,,कासट
+ICDAR MLT-2019,held_out_from_train,tr_img_09714,Hindi,TrainImages/TrainImages/tr_img_09714.jpg,,TrainGT/TrainGT/tr_img_09714.txt,95.311,अरिहंत,en,,,,अरिहंत
+ICDAR MLT-2019,held_out_from_train,tr_img_09536,Hindi,TrainImages/TrainImages/tr_img_09536.jpg,,TrainGT/TrainGT/tr_img_09536.txt,95.2397,रमेश,en,,,,रमेश
+ICDAR MLT-2019,held_out_from_train,tr_img_09727,Hindi,TrainImages/TrainImages/tr_img_09727.jpg,,TrainGT/TrainGT/tr_img_09727.txt,95.1753,नटराज,en,,,,नटराज
+ICDAR MLT-2019,held_out_from_train,tr_img_09011,Hindi,TrainImages/TrainImages/tr_img_09011.jpg,,TrainGT/TrainGT/tr_img_09011.txt,95.164,सुनिता,en,,,,सुनिता
+ICDAR MLT-2019,held_out_from_train,tr_img_09512,Hindi,TrainImages/TrainImages/tr_img_09512.jpg,,TrainGT/TrainGT/tr_img_09512.txt,95.0851,शिवम,en,,,,शिवम
+ICDAR MLT-2019,held_out_from_train,tr_img_09522,Hindi,TrainImages/TrainImages/tr_img_09522.jpg,,TrainGT/TrainGT/tr_img_09522.txt,95.0642,रायगड,en,,,,रायगड
+ICDAR MLT-2019,held_out_from_train,tr_img_09075,Hindi,TrainImages/TrainImages/tr_img_09075.jpg,,TrainGT/TrainGT/tr_img_09075.txt,94.9945,शाल,en,,,,शाल
+ReCTS,val,train_ReCTS_019652,text,rects_yolo_obb_dataset/images/val/train_ReCTS_019652.jpg,rects_yolo_obb_dataset/labels/val/train_ReCTS_019652.txt,gt/train_ReCTS_019652.json,97.3759,陈五味,en,,,,陈五味
+ReCTS,val,train_ReCTS_019510,text,rects_yolo_obb_dataset/images/val/train_ReCTS_019510.jpg,rects_yolo_obb_dataset/labels/val/train_ReCTS_019510.txt,gt/train_ReCTS_019510.json,96.8801,夜火烤吧,en,,,,夜火烤吧
+ReCTS,val,train_ReCTS_018101,text,rects_yolo_obb_dataset/images/val/train_ReCTS_018101.jpg,rects_yolo_obb_dataset/labels/val/train_ReCTS_018101.txt,gt/train_ReCTS_018101.json,96.5619,陈厨小馆,en,,,,陈厨小馆
+ReCTS,val,train_ReCTS_018483,text,rects_yolo_obb_dataset/images/val/train_ReCTS_018483.jpg,rects_yolo_obb_dataset/labels/val/train_ReCTS_018483.txt,gt/train_ReCTS_018483.json,96.2872,木子米粉,en,,,,木子米粉
+ReCTS,val,train_ReCTS_018092,text,rects_yolo_obb_dataset/images/val/train_ReCTS_018092.jpg,rects_yolo_obb_dataset/labels/val/train_ReCTS_018092.txt,gt/train_ReCTS_018092.json,96.2362,魚兒大碗面,en,,,,魚兒大碗面
+ReCTS,val,train_ReCTS_019587,text,rects_yolo_obb_dataset/images/val/train_ReCTS_019587.jpg,rects_yolo_obb_dataset/labels/val/train_ReCTS_019587.txt,gt/train_ReCTS_019587.json,96.2345,一碗好粉,en,,,,一碗好粉
+ReCTS,val,train_ReCTS_019003,text,rects_yolo_obb_dataset/images/val/train_ReCTS_019003.jpg,rects_yolo_obb_dataset/labels/val/train_ReCTS_019003.txt,gt/train_ReCTS_019003.json,96.2206,壹號冰室,en,,,,壹號冰室
+ReCTS,val,train_ReCTS_018127,text,rects_yolo_obb_dataset/images/val/train_ReCTS_018127.jpg,rects_yolo_obb_dataset/labels/val/train_ReCTS_018127.txt,gt/train_ReCTS_018127.json,96.0995,牛丸面,en,,,,牛丸面
+ReCTS,val,train_ReCTS_019875,text,rects_yolo_obb_dataset/images/val/train_ReCTS_019875.jpg,rects_yolo_obb_dataset/labels/val/train_ReCTS_019875.txt,gt/train_ReCTS_019875.json,96.0861,青田寿司,en,,,,青田寿司
+ReCTS,val,train_ReCTS_019535,text,rects_yolo_obb_dataset/images/val/train_ReCTS_019535.jpg,rects_yolo_obb_dataset/labels/val/train_ReCTS_019535.txt,gt/train_ReCTS_019535.json,96.0362,REALM,en,,,,REALM
+ReCTS,val,train_ReCTS_018099,text,rects_yolo_obb_dataset/images/val/train_ReCTS_018099.jpg,rects_yolo_obb_dataset/labels/val/train_ReCTS_018099.txt,gt/train_ReCTS_018099.json,95.9401,大家烧豆腐,en,,,,大家烧豆腐
+ReCTS,val,train_ReCTS_019194,text,rects_yolo_obb_dataset/images/val/train_ReCTS_019194.jpg,rects_yolo_obb_dataset/labels/val/train_ReCTS_019194.txt,gt/train_ReCTS_019194.json,95.8748,九禾烧烤,en,,,,九禾烧烤
+ReCTS,val,train_ReCTS_019927,text,rects_yolo_obb_dataset/images/val/train_ReCTS_019927.jpg,rects_yolo_obb_dataset/labels/val/train_ReCTS_019927.txt,gt/train_ReCTS_019927.json,95.8601,泡面小食堂,en,,,,泡面小食堂
+ReCTS,val,train_ReCTS_019581,text,rects_yolo_obb_dataset/images/val/train_ReCTS_019581.jpg,rects_yolo_obb_dataset/labels/val/train_ReCTS_019581.txt,gt/train_ReCTS_019581.json,95.8577,大众小吃,en,,,,大众小吃
+ReCTS,val,train_ReCTS_018262,text,rects_yolo_obb_dataset/images/val/train_ReCTS_018262.jpg,rects_yolo_obb_dataset/labels/val/train_ReCTS_018262.txt,gt/train_ReCTS_018262.json,95.8445,大远饭店,en,,,,大远饭店
+ReCTS,val,train_ReCTS_019701,text,rects_yolo_obb_dataset/images/val/train_ReCTS_019701.jpg,rects_yolo_obb_dataset/labels/val/train_ReCTS_019701.txt,gt/train_ReCTS_019701.json,95.8207,胖哥凉皮,en,,,,胖哥凉皮
+ReCTS,val,train_ReCTS_019145,text,rects_yolo_obb_dataset/images/val/train_ReCTS_019145.jpg,rects_yolo_obb_dataset/labels/val/train_ReCTS_019145.txt,gt/train_ReCTS_019145.json,95.8029,酸萝卜乌鱼,en,,,,酸萝卜乌鱼
+ReCTS,val,train_ReCTS_019850,text,rects_yolo_obb_dataset/images/val/train_ReCTS_019850.jpg,rects_yolo_obb_dataset/labels/val/train_ReCTS_019850.txt,gt/train_ReCTS_019850.json,95.6889,川妹子活鱼馆,en,,,,川妹子活鱼馆
+ReCTS,val,train_ReCTS_019279,text,rects_yolo_obb_dataset/images/val/train_ReCTS_019279.jpg,rects_yolo_obb_dataset/labels/val/train_ReCTS_019279.txt,gt/train_ReCTS_019279.json,95.602,郭记栗王,en,,,,郭记栗王
+ReCTS,val,train_ReCTS_019704,text,rects_yolo_obb_dataset/images/val/train_ReCTS_019704.jpg,rects_yolo_obb_dataset/labels/val/train_ReCTS_019704.txt,gt/train_ReCTS_019704.json,95.5479,肉的主题,en,,,,肉的主题

@@ -1,0 +1,15 @@
+.DS_Store
+.vendor/
+datasets/
+**/__pycache__/
+
+translation_subset/mlt_from_zip/selected_images/
+translation_subset/rects_from_zips/selected_images/
+
+translation_subset/english_only_master_annotation_codex*.csv
+translation_subset/english_only_master_annotation_draft.csv
+translation_subset/english_only_master_annotation_sdk_dryrun.csv
+translation_subset/hf_space_eval_sample.csv
+translation_subset/flagged_source_subset.csv
+translation_subset/codex_comparison/flagged_rows.csv
+translation_subset/codex_majority_vote/unresolved_rows.csv

@@ -1,0 +1,161 @@
+image_id,source_dataset,gold_translation,predicted_translation,normalized_match,contains_match,status
+tr_img_00739,ICDAR MLT-2019,Closed,closed,true,true,ok
+tr_img_00782,ICDAR MLT-2019,Pomegranate,Pomegranate,true,true,ok
+tr_img_00135,ICDAR MLT-2019,The Revolution,Revolution Arabic ooi: TONICAR the magazine,false,false,ok
+tr_img_00717,ICDAR MLT-2019,Velvet,[Between Qatif,false,false,ok
+tr_img_00021,ICDAR MLT-2019,I love my country,B Must between,false,false,ok
+tr_img_00795,ICDAR MLT-2019,Open,open,true,true,ok
+tr_img_00744,ICDAR MLT-2019,Child City,To fall asleep Galvanized,false,false,ok
+tr_img_00617,ICDAR MLT-2019,Royal,Royal,true,true,ok
+tr_img_00544,ICDAR MLT-2019,Al Baraka,Blessing,false,false,ok
+tr_img_00061,ICDAR MLT-2019,I'll cut your face.,About I cut off a class,false,false,ok
+tr_img_00056,ICDAR MLT-2019,Municipality Palace,Municipality In the afternoon,false,false,ok
+tr_img_00069,ICDAR MLT-2019,Push the door,Push The door,true,true,ok
+tr_img_00410,ICDAR MLT-2019,Ammar Furniture,Fath,false,false,ok
+tr_img_00427,ICDAR MLT-2019,Sweet Sandwich,sweet Extract,false,false,ok
+tr_img_00432,ICDAR MLT-2019,Hardee's,Mardy's,false,false,ok
+tr_img_00792,ICDAR MLT-2019,Educational Professions Syndicate,to For careers Water,false,false,ok
+tr_img_00578,ICDAR MLT-2019,Traders' Syndicate,Commercial people Merchants Syndicate guild,false,false,ok
+tr_img_00632,ICDAR MLT-2019,sand,sand,true,true,ok
+tr_img_00679,ICDAR MLT-2019,Al Mansoura,Mansoura,false,true,ok
+tr_img_00946,ICDAR MLT-2019,Rawdat Al Safa,Kindergarten Serenity,false,false,ok
+tr_img_01804,ICDAR MLT-2019,115,115,true,true,ok
+tr_img_01835,ICDAR MLT-2019,BBC,B B B B B,false,false,ok
+tr_img_01633,ICDAR MLT-2019,61,61 7,false,true,ok
+tr_img_01530,ICDAR MLT-2019,24,24,true,true,ok
+tr_img_01081,ICDAR MLT-2019,EAT,EAT,true,true,ok
+tr_img_01121,ICDAR MLT-2019,998,O 00 OC,false,false,ok
+tr_img_01052,ICDAR MLT-2019,314,314,true,true,ok
+tr_img_01644,ICDAR MLT-2019,46,46,true,true,ok
+tr_img_01441,ICDAR MLT-2019,120,120 0,false,true,ok
+tr_img_01817,ICDAR MLT-2019,42,42,true,true,ok
+tr_img_01220,ICDAR MLT-2019,85,85,true,true,ok
+tr_img_01806,ICDAR MLT-2019,16781,CONNECT,false,false,ok
+tr_img_02853,ICDAR MLT-2019,workshops,atelier,false,false,ok
+tr_img_01354,ICDAR MLT-2019,2421,2421,true,true,ok
+tr_img_01429,ICDAR MLT-2019,Hospital,Hospital,true,true,ok
+tr_img_01024,ICDAR MLT-2019,JobCenter,Cent,false,true,ok
+tr_img_02991,ICDAR MLT-2019,Baker,BOUI BAKERY,false,true,ok
+tr_img_01552,ICDAR MLT-2019,Levi's R,B evirs,false,false,ok
+tr_img_01455,ICDAR MLT-2019,Google,Google,true,true,ok
+tr_img_01112,ICDAR MLT-2019,8712,871,false,true,ok
+tr_img_03248,ICDAR MLT-2019,Where is this?,Where is your son? Tomorrow,false,false,ok
+tr_img_03063,ICDAR MLT-2019,Yiku Internet Café,—,false,false,ok
+tr_img_03851,ICDAR MLT-2019,Built in 2000,Lord in 2000 J2000,false,false,ok
+tr_img_03653,ICDAR MLT-2019,Employee Safety,Work safety,false,false,ok
+tr_img_03315,ICDAR MLT-2019,Zhonghang Science and Technology University,AVIC Technology,false,false,ok
+tr_img_03149,ICDAR MLT-2019,Beef Soup and Steamed Dishes,Beef soup bowl with steamed vegetables,false,false,ok
+tr_img_03297,ICDAR MLT-2019,Peking University dream comes true,Ideal Peking University dream come true,false,false,ok
+tr_img_03871,ICDAR MLT-2019,Old Steamer,ped old steamer,false,true,ok
+tr_img_03716,ICDAR MLT-2019,Welcome the Olympics,Welcome the Olympics,true,true,ok
+tr_img_03474,ICDAR MLT-2019,Minjiang Bridge,Minjiang Bridge Zhijiang Bridge,false,true,ok
+tr_img_03806,ICDAR MLT-2019,Old Tianjin Zhajiang Noodles,Jinwei fried sauce,false,false,ok
+tr_img_03148,ICDAR MLT-2019,Shenmu Station,wooden station wooden cart,false,false,ok
+tr_img_03914,ICDAR MLT-2019,Welcome to the National College Entrance Examination.,welcome you They participate in all,false,false,ok
+tr_img_03372,ICDAR MLT-2019,Beijing Shuangzhou Billiards Club,Beijing Shuangzhou Billiards Club,true,true,ok
+tr_img_03402,ICDAR MLT-2019,Guan Yun Bai Jian Chi,—,false,false,ok
+tr_img_03159,ICDAR MLT-2019,National Modern Crop Seed Industry Work Conference,National Working Conference on Modern Crop Seed Industry,false,false,ok
+tr_img_03218,ICDAR MLT-2019,"Senior Year, Class 16 — Mom, I'm coming back!","Grade 3·10 High School Grade 16 Mom, I want to come back!",false,false,ok
+tr_img_03887,ICDAR MLT-2019,Fire lane parking,[薹 —,false,false,ok
+tr_img_03505,ICDAR MLT-2019,Yun Xiang Xuan — Hunan Cuisine,Yunxiangxuan Hunan cuisine,false,false,ok
+tr_img_03893,ICDAR MLT-2019,Imperial grain and state taxes—failure to pay is a crime.,"Imperial grain and national tax, failure to pay education crime",false,false,ok
+tr_img_05241,ICDAR MLT-2019,Emergency telephone,Emergency low phone call,false,false,ok
+tr_img_05675,ICDAR MLT-2019,Shabu-shabu,shabu shabu,false,false,ok
+tr_img_05212,ICDAR MLT-2019,Woori Bank,Lee Bank,false,false,ok
+tr_img_05984,ICDAR MLT-2019,Jeongsuk,Jeong'sook,false,false,ok
+tr_img_05370,ICDAR MLT-2019,Cigarettes,at the time,false,false,ok
+tr_img_05012,ICDAR MLT-2019,Promotional Hall,Public Relations Center,false,false,ok
+tr_img_05083,ICDAR MLT-2019,We puff grains and beans for you,military service I'm having a hard time,false,false,ok
+tr_img_05755,ICDAR MLT-2019,Mirae House,Mirae House,true,true,ok
+tr_img_05805,ICDAR MLT-2019,Korean Modern Costume Museum,Korea Hyundai Sang Museum Costume sale,false,false,ok
+tr_img_05054,ICDAR MLT-2019,Empty bowl,empty bowl,true,true,ok
+tr_img_05225,ICDAR MLT-2019,Parliament Super Slim,Gliadent super slim,false,false,ok
+tr_img_05299,ICDAR MLT-2019,Hangui-gil,number 0 creative path,false,false,ok
+tr_img_05658,ICDAR MLT-2019,various,various,true,true,ok
+tr_img_05144,ICDAR MLT-2019,Wrong-way driving,reverse run,false,false,ok
+tr_img_05456,ICDAR MLT-2019,"Pork head meat, seafood scallion pancake",— Nagomo M,false,false,ok
+tr_img_05308,ICDAR MLT-2019,Heungsadan,owner buy Sec step,false,false,ok
+tr_img_05316,ICDAR MLT-2019,Coco Livingtel,Coco Coliving Tech Bingtel,false,false,ok
+tr_img_05200,ICDAR MLT-2019,Whirlpool Laundromat,Full red Full red Put your foot down 5fiming,false,false,ok
+tr_img_05134,ICDAR MLT-2019,Fire extinguisher cabinet,digestion firearms flagship,false,false,ok
+tr_img_05742,ICDAR MLT-2019,earrings,earring,false,true,ok
+tr_img_06975,ICDAR MLT-2019,Yamada,OF,false,false,ok
+tr_img_06623,ICDAR MLT-2019,Enter here,YCC Ru,false,false,ok
+tr_img_06738,ICDAR MLT-2019,Turn left when exiting,Hachi issue,false,false,ok
+tr_img_06150,ICDAR MLT-2019,Shin-144,deep-144 -144,false,false,ok
+tr_img_06672,ICDAR MLT-2019,Merge Ahead,green company intention,false,false,ok
+tr_img_06962,ICDAR MLT-2019,Video,M,false,false,ok
+tr_img_06693,ICDAR MLT-2019,STOP,—,false,false,ok
+tr_img_06147,ICDAR MLT-2019,Manga Cafe Reception B1,Manga smoking Pay B1 Reception B1,false,false,ok
+tr_img_06430,ICDAR MLT-2019,Samho,Sasaki,false,false,ok
+tr_img_06383,ICDAR MLT-2019,"Hall, Suishamachi 6-chome",.987 L86* Hall Suishacho 6-chome,false,false,ok
+tr_img_06008,ICDAR MLT-2019,Yōten De-e,cow store 1-0,false,false,ok
+tr_img_06997,ICDAR MLT-2019,Keep left,Side traffic,false,false,ok
+tr_img_06942,ICDAR MLT-2019,Standard Departure Timetable,Departure time machine,false,false,ok
+tr_img_06203,ICDAR MLT-2019,No Posting Notices — Shizuoka Prefectural Police Headquarters,No paper allowed Poster Shizuoka Prefectural Police Headquarters,false,false,ok
+tr_img_06305,ICDAR MLT-2019,Hakata E-Men Nagahamaya,Hakata Uxn Changhong Bamboo,false,false,ok
+tr_img_06881,ICDAR MLT-2019,Japanese Sake Shifuku,Japanese sake 55 yuan,false,false,ok
+tr_img_06501,ICDAR MLT-2019,Longévité Motosumiyoshi,Longevite Motosumiyoshi,false,false,ok
+tr_img_06166,ICDAR MLT-2019,JR East,UR East Japan,false,false,ok
+tr_img_06761,ICDAR MLT-2019,how many times,Fortune stillness,false,false,ok
+tr_img_06616,ICDAR MLT-2019,"Today, we started a trust.","Come on, I started entrusting",false,false,ok
+tr_img_08389,ICDAR MLT-2019,Xerox,[what[,false,false,ok
+tr_img_08082,ICDAR MLT-2019,Bicycle,"""Hove",false,false,ok
+tr_img_08288,ICDAR MLT-2019,Nataraj,IEt,false,false,ok
+tr_img_08060,ICDAR MLT-2019,Belgharia,Railways,false,false,ok
+tr_img_08381,ICDAR MLT-2019,Shri Guru,Giggik,false,false,ok
+tr_img_08513,ICDAR MLT-2019,of development,of development,true,true,ok
+tr_img_08602,ICDAR MLT-2019,Mansi,you think,false,false,ok
+tr_img_08619,ICDAR MLT-2019,Photocopying,Ch 94 | to do thong,false,false,ok
+tr_img_08359,ICDAR MLT-2019,Biplob,Bipleb,false,false,ok
+tr_img_08339,ICDAR MLT-2019,Vivekananda,444!! 3|9|4,false,false,ok
+tr_img_08402,ICDAR MLT-2019,Secluded,[Swanal 046_4@> &0 Sarmsi Belzadia <4067,false,false,ok
+tr_img_08785,ICDAR MLT-2019,Pantau,pastu A Rockam,false,false,ok
+tr_img_08208,ICDAR MLT-2019,Belgharia,homeless,false,false,ok
+tr_img_08998,ICDAR MLT-2019,Sumart,irss P,false,false,ok
+tr_img_08886,ICDAR MLT-2019,Popular Clothing Store,popular clothing store,true,true,ok
+tr_img_08995,ICDAR MLT-2019,Birati Municipality,"5 Be SAR SAR D.SMIEO 449,1 Birty",false,false,ok
+tr_img_08116,ICDAR MLT-2019,Orange,H5tu 4,false,false,ok
+tr_img_08213,ICDAR MLT-2019,Book,n,false,false,ok
+tr_img_08144,ICDAR MLT-2019,Let's go to Bidhannagar,Chon Bubanrag,false,false,ok
+tr_img_08525,ICDAR MLT-2019,Furniture,fornication,false,false,ok
+tr_img_09285,ICDAR MLT-2019,Palm,palm,true,true,ok
+tr_img_09277,ICDAR MLT-2019,Amul,execution,false,false,ok
+tr_img_09359,ICDAR MLT-2019,Venu,vanna,false,false,ok
+tr_img_09913,ICDAR MLT-2019,Medicines,medicines —,false,true,ok
+tr_img_09832,ICDAR MLT-2019,Bimod,Brimod,false,false,ok
+tr_img_09496,ICDAR MLT-2019,Manali,Manali,true,true,ok
+tr_img_09485,ICDAR MLT-2019,Bakery,bakery,true,true,ok
+tr_img_09158,ICDAR MLT-2019,Medicines,blll,false,false,ok
+tr_img_09167,ICDAR MLT-2019,Amul,HmC,false,false,ok
+tr_img_09415,ICDAR MLT-2019,Shalin,shining,false,false,ok
+tr_img_09416,ICDAR MLT-2019,Rajgad,Rajgad,true,true,ok
+tr_img_09870,ICDAR MLT-2019,Balanced,don't vote,false,false,ok
+tr_img_09226,ICDAR MLT-2019,Kast,Kasat,false,false,ok
+tr_img_09714,ICDAR MLT-2019,Arihant,2,false,false,ok
+tr_img_09536,ICDAR MLT-2019,Ramesh,ieta,false,false,ok
+tr_img_09727,ICDAR MLT-2019,Nataraj,ter,false,false,ok
+tr_img_09011,ICDAR MLT-2019,Sunita,Sunita,true,true,ok
+tr_img_09512,ICDAR MLT-2019,Shivam,shinam,false,false,ok
+tr_img_09522,ICDAR MLT-2019,Raigad,Yag,false,false,ok
+tr_img_09075,ICDAR MLT-2019,Shawl,shawl,true,true,ok
+train_ReCTS_019652,ReCTS,Chen Wuwei,Chen Wuwei,true,true,ok
+train_ReCTS_019510,ReCTS,Night Fire BBQ Bar,NEYG NSTYF,false,false,ok
+train_ReCTS_018101,ReCTS,Chef Chen's Bistro,Dongchu Xiaochiku,false,false,ok
+train_ReCTS_018483,ReCTS,Muzi Rice Noodles,Kisanmai flour Mu San Rice Noodles,false,false,ok
+train_ReCTS_018092,ReCTS,Yu'er Big Bowl Noodles,large bowl,false,false,ok
+train_ReCTS_019587,ReCTS,A Bowl of Good Noodles,E1 1k,false,false,ok
+train_ReCTS_019003,ReCTS,No. 1 Ice Room,Ice room No.1,false,false,ok
+train_ReCTS_018127,ReCTS,Beef Ball Noodles,P-26 TOLIE,false,false,ok
+train_ReCTS_019875,ReCTS,Qingtian Sushi,Qingtian Sushi,true,true,ok
+train_ReCTS_019535,ReCTS,REALM,EALA,false,false,ok
+train_ReCTS_018099,ReCTS,Dajia Braised Tofu,Ooya Hot Tofu,false,false,ok
+train_ReCTS_019194,ReCTS,Jiuhe Barbecue,S store Jiuhe 烧烤,false,false,ok
+train_ReCTS_019927,ReCTS,Instant Noodle Cafeteria,Awamen Shokudo,false,false,ok
+train_ReCTS_019581,ReCTS,Popular Snacks,all small mouths stuttering,false,false,ok
+train_ReCTS_018262,ReCTS,Dayuan Restaurant,principality,false,false,ok
+train_ReCTS_019701,ReCTS,Fat Brother Liangpi,fist bump Brother Liangpi,false,false,ok
+train_ReCTS_019145,ReCTS,Sour Pickled Radish Black Fish,| you acidic acid Sour radish black as Fish,false,false,ok
+train_ReCTS_019850,ReCTS,Chuan Meizi Live Fish Restaurant,life Live fish,false,false,ok
+train_ReCTS_019279,ReCTS,Guo's Chestnut King,record chestnut Open H,false,false,ok
+train_ReCTS_019704,ReCTS,Meat Theme,physical master,false,false,ok
