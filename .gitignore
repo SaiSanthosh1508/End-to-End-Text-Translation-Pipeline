@@ -13,3 +13,7 @@ translation_subset/hf_space_eval_sample.csv
 translation_subset/flagged_source_subset.csv
 translation_subset/codex_comparison/flagged_rows.csv
 translation_subset/codex_majority_vote/unresolved_rows.csv
+
+translation_subset/icdar_pool_120/
+final_dataset_only_100/
+kaggle_upload_100/

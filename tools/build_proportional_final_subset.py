@@ -16,6 +16,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--eval-csv", required=True)
     parser.add_argument("--output-dir", required=True)
     parser.add_argument("--target-size", type=int, default=40)
+    parser.add_argument(
+        "--language-quotas",
+        default="",
+        help="Comma-separated quotas such as Arabic=14,Bangla=15,Chinese=14,Hindi=14,Japanese=15,Korean=14,Latin=14",
+    )
     return parser.parse_args()
 
 
@@ -53,6 +58,29 @@ def allocate_counts(language_counts: dict[str, int], target_size: int) -> dict[s
     return allocations
 
 
+def parse_language_quotas(spec: str) -> dict[str, int]:
+    if not spec.strip():
+        return {}
+
+    quotas: dict[str, int] = {}
+    for chunk in spec.split(","):
+        item = chunk.strip()
+        if not item:
+            continue
+        if "=" not in item:
+            raise SystemExit(f"invalid language quota entry: {item}")
+        language, raw_value = item.split("=", 1)
+        language = language.strip()
+        try:
+            value = int(raw_value.strip())
+        except ValueError as exc:
+            raise SystemExit(f"invalid quota value for {language}: {raw_value}") from exc
+        if value < 0:
+            raise SystemExit(f"quota for {language} must be non-negative")
+        quotas[language] = value
+    return quotas
+
+
 def selector_score(row: dict[str, str]) -> float:
     try:
         return float(row.get("selector_score", "") or 0.0)
@@ -72,6 +100,8 @@ def main() -> int:
         raise SystemExit("gold sheet is empty")
     if not eval_rows:
         raise SystemExit("evaluation csv is empty")
+    print(f"Loaded {len(gold_rows)} gold rows from {gold_sheet}", flush=True)
+    print(f"Loaded {len(eval_rows)} eval rows from {eval_csv}", flush=True)
 
     eval_by_id = {row["image_id"]: row for row in eval_rows}
 
@@ -98,7 +128,24 @@ def main() -> int:
         scored_by_language[language].append(combined)
         language_counts[language] += 1
 
-    allocations = allocate_counts(language_counts, args.target_size)
+    requested_quotas = parse_language_quotas(args.language_quotas)
+    if requested_quotas:
+        missing_languages = sorted(set(requested_quotas) - set(language_counts))
+        if missing_languages:
+            raise SystemExit(f"unknown languages in quota spec: {', '.join(missing_languages)}")
+        for language, quota in requested_quotas.items():
+            available = language_counts[language]
+            if quota > available:
+                raise SystemExit(
+                    f"requested quota {quota} exceeds available {available} for language {language}"
+                )
+        allocations = {language: requested_quotas.get(language, 0) for language in sorted(language_counts)}
+        target_size = sum(allocations.values())
+        print(f"Using explicit language quotas: {allocations}", flush=True)
+    else:
+        allocations = allocate_counts(language_counts, args.target_size)
+        target_size = args.target_size
+        print(f"Using proportional language quotas: {allocations}", flush=True)
 
     selected_rows: list[dict[str, str]] = []
     for language, rows in scored_by_language.items():
@@ -112,6 +159,7 @@ def main() -> int:
             )
         )
         keep = allocations.get(language, 0)
+        print(f"[select] {language}: available={len(rows)} keep={keep}", flush=True)
         for rank, row in enumerate(rows[:keep], start=1):
             out = dict(row)
             out["language_rank"] = str(rank)
@@ -152,12 +200,16 @@ def main() -> int:
         writer.writerows(selected_rows)
 
     summary = {
-        "target_size": args.target_size,
+        "target_size": target_size,
         "selected_rows": len(selected_rows),
         "selection_policy": {
             "ranking_metric": "normalized_chrf",
             "language_bucketing": "Use MLT class_name directly and merge ReCTS into Chinese.",
-            "allocation_rule": "Largest remainder proportional allocation over language counts.",
+            "allocation_rule": (
+                "Explicit user-provided language quotas."
+                if requested_quotas
+                else "Largest remainder proportional allocation over language counts."
+            ),
         },
         "language_counts": {
             language: {
