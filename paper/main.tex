@@ -1,0 +1,980 @@
+\documentclass{ieeeaccess}
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{xurl}
+\usepackage[hidelinks]{hyperref}
+\urlstyle{same}
+\usepackage{subcaption}
+\graphicspath{{figures/}}
+
+\usepackage{bm}
+\makeatletter
+\AtBeginDocument{\DeclareMathVersion{bold}
+\SetSymbolFont{operators}{bold}{T1}{times}{b}{n}
+\SetSymbolFont{NewLetters}{bold}{T1}{times}{b}{it}
+\SetMathAlphabet{\mathrm}{bold}{T1}{times}{b}{n}
+\SetMathAlphabet{\mathit}{bold}{T1}{times}{b}{it}
+\SetMathAlphabet{\mathbf}{bold}{T1}{times}{b}{n}
+\SetMathAlphabet{\mathtt}{bold}{OT1}{pcr}{b}{n}
+\SetSymbolFont{symbols}{bold}{OMS}{cmsy}{b}{n}
+\renewcommand\boldmath{\@nomath\boldmath\mathversion{bold}}}
+\makeatother
+
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+%----------------------------------------------------------------------
+\begin{document}
+\history{}
+\doi{}
+\vol{13}
+\year{2025}
+
+\title{An End-to-End Deep Learning Driven Web Application for Multilingual Scene Text Understanding and Translation Using Multi-Scale CBAM and Cross-Attention Mechanism}
+
+\author{%
+  \uppercase{Thota Rishik Sai Santhosh}\authorrefmark{1},
+  \uppercase{Abhineet Saha}\authorrefmark{1},
+  \uppercase{Tauseef Khan}\authorrefmark{2} and
+  \uppercase{AFZAL HUSSAIN SHAHID}\authorrefmark{3}%
+}
+
+\address[1]{School of Computer Science and Engineering (SCOPE),
+VIT-AP University, Beside AP Secretariat, Amaravati, 522241, Andhra Pradesh, India}
+\address[2]{Department of Software and System Engineering, School of Computer Science and Engineering (SCOPE),
+VIT-AP University, Beside AP Secretariat, Amaravati, 522241, Andhra Pradesh, India}
+\address[3]{Department of Artificial Intelligence and Machine Learning, School of Computer Science and Engineering (SCOPE),
+VIT-AP University, Beside AP Secretariat, Amaravati, 522241, Andhra Pradesh, India}
+
+\markboth
+{Santhosh \headeretal: An End-to-End Deep Learning Driven Web Application for Multilingual Scene Text Understanding and Translation}
+{Santhosh \headeretal: An End-to-End Deep Learning Driven Web Application for Multilingual Scene Text Understanding and Translation}
+
+\corresp{Corresponding author: Afzal Hussain Shahid (e-mail: afzal.hussain@vitap.ac.in).}
+
+%----------------------------------------------------------------------
+\begin{abstract}
+Text extraction continues to be a non-trivial problem in natural scene images due to environmental interference, perspective distortions, and multilingual complexity, causing most OCR systems to perform poorly in unconstrained environments for accurate text understanding. This paper presents an end-to-end text reading framework for multilingual natural scene and Chinese signboard images. The developed framework consists of three modules: (i)~text detection from source images, (ii)~recognition of detected text components, and (iii)~translation of recognized text into a target language. The text detection module is driven by a YOLOv11 detector enhanced with a novel Multi-Scale Convolutional Block Attention Module (MS-CBAM) \textemdash{ which replaces the single-kernel spatial attention of standard CBAM with three parallel convolutional branches (3$\times$3, 5$\times$5, 7$\times$7) to handle the stroke-width diversity of multilingual scripts --- and a Cross-Attention mechanism that connects the deep semantic branch to the spatially-refined feature branch for precise character localisation.} The recognition module integrates an optimized EasyOCR engine and a fine-tuned PaddleOCR model to handle diverse linguistic outputs. The framework has been evaluated on two benchmark datasets: ICDAR MLT-2019, which contains complex scene texts, and ReCTS, which comprises Chinese signboard images. The framework achieved H-mean scores of 75.16\% and 86.85\%, alongside an overall mAP@0.5 of 0.751 for text detection on the ICDAR 2019 and ReCTS datasets, respectively. It also produced a Character Error Rate (CER) of 14.51\% on ReCTS and a 1-Normalized Edit Distance (1-NED) of 0.7063 on the multilingual MLT-2019 dataset for text recognition. On a released stratified 100-image ICDAR supplementary English-reference subset, the end-to-end pipeline produced 70 normalized exact matches, 84 normalized contains matches, and an average normalized chrF score of 0.9452. These translation results are supplementary rather than official ICDAR leaderboard metrics because the benchmark does not provide reference translations. The entire framework is seamlessly integrated into an end-to-end web application for user convenience. The source code, dataset, and other particulars are publicly released at
+\href{https://github.com/SaiSanthosh1508/End-to-End-Text-Translation-Pipeline}{github.com/SaiSanthosh1508/End-to-End-Text-Translation-Pipeline}~\cite{b1}
+for academic, research, and other non-commercial usage.
+\end{abstract}
+
+\begin{keywords}
+Text detection, text recognition, text translation, deep learning,
+scene images, multi-lingual text
+\end{keywords}
+
+\titlepgskip=-21pt
+
+\maketitle
+
+%----------------------------------------------------------------------
+\section{Introduction}
+\label{sec:introduction}
+%----------------------------------------------------------------------
+
+\PARstart{T}{he} automated extraction of text from digital images and
+documents is a fundamental and highly valuable task in information retrieval and computer vision~\cite{b2}. While traditional Optical Character Recognition (OCR) systems perform reliably on constrained, high-quality document scans~\cite{b3}, extracting text from unstructured or in-the-wild images remains a significant challenge. Such problems often come due to the inherent complexities of image data in the form of cluttered backgrounds, changing illumination conditions, geometrical distortions, and diverse text font styles. In this regard, deep learning has brought about powerful new ways to deal with these problems~\cite{b4}, yet developing models that are both robust and able to be used in many situations is still an active area of research. Modern deep learning frameworks for text recognition generally adhere to a two-stage pipeline. A visual backbone, like a Convolutional Neural Network (CNN) or a Vision Transformer (ViT)~\cite{b5}, works as a feature extractor by turning the input image into a high-dimensional feature representation. Second, an ordered or sequence- to-sequence decoder handles this feature map. This part could use architectures like Recurrent Neural Networks (RNNs)~\cite{b6} or, more commonly, attention-based mechanisms~\cite{b7}, is responsible for translating the visual features into a sequence of output tokens. The output of this decoder is directly related to a set of words, characters, or sub-words through which the model has been trained to recognize texts. The size of vocabulary and makeup are important design decisions that depend on the model's architecture, the linguistic scope (e.g., single vs. multiple languages), and the target domain. The vocabulary is the most important part of the last prediction layer. The decoder part of the model gives a prediction score to each character or word it knows, and a softmax function generates probabilities from those scores to choose the most likely token. This system works, but it gets very complicated when you use multilingual OCR models~\cite{b8}. There are two kinds of problems: first, the necessity of the model to learn text patterns of different scripts that are dissimilar from each other, like Latin, Cyrillic, and Japanese, second, the vocabulary grows to include all of these languages, which makes the model heavyweight and requires a lot of computing resources for training. \par
+Besides, the OCR can only function if the text is there in the first place. There are problems with the procedure that finds the text. Most well-known text detectors, such as YOLO~\cite{b9}, are trained on datasets that can be used for many things, like the COCO dataset~\cite{b10}. Generally, the appearance of text may be diverse in font and multi-oriented. It is worth mentioning that a model may correctly identify cars in a complex environment but may fail to detect texts multilingual and unconstrained scenarios like ICDAR MLT-2019~\cite{b11} and ICDAR 2019 ReCTS~\cite{b12}.
+This study presents a robust framework for a multilingual text-reading system in the wild to overcome the limitations of current methodologies. The primary contributions of this research are summarized as follows:
+
+\begin{itemize}
+  \item \textbf{Novel Multi-Scale Spatial Attention for Multilingual Text: The key architectural contribution is the Multi-Scale Spatial Attention (MS-SA) module, which uses three parallel convolutional branches (3$\times$3, 5$\times$5, 7$\times$7) instead of the single fixed kernel in standard CBAM~}\cite{b33}. This is motivated by the fact that text stroke widths vary across scripts \textemdash{ Arabic diacritics are thin, Chinese strokes are thick, and Latin falls in between. A single kernel cannot handle this variation adequately. In addition, the Cross-Attention block connects the deep semantic branch (C2PSA output) to the MS-CBAM refined spatial features, allowing the detection head to selectively retrieve fine-grained character geometry rather than relying on simple upsampling.}
+
+  \item \textbf{End-to-End Text Reading System:} A unified text recognition pipeline has been designed, driven by the EasyOCR engine and seamlessly integrated with the text detection module for recognition of detected texts. Finally, the recognized texts are translated into the target language using a built-in library package. This end-to-end system automates the entire process of finding text areas, cropping regions of interest, recognition, and translation to native language. This enables the workflow from raw image to digital-translated text to be much easier and more user-convenient.
+
+  \item \textbf{Text Understanding in Multilingual Scenario:} The model is trained and evaluated on the ICDAR MLT-2019 benchmark dataset, which comprises multilingual text images. The obtained results demonstrate the robustness and efficiency of the developed framework in understanding texts in multilingual environments and certainly overcome the single-language limitations of many classical end-to-end systems.
+
+  \item \textbf{Interactive Demonstration Interface:} To demonstrate practical utility, a user-friendly web application has been designed using the Streamlit library package. This interface allows users to upload images, visualize detection bounding boxes, and view translated text overlays in real-time, bridging the gap between theoretical research and real-world deployment. The deployed web application implements language-aware OCR routing, using EasyOCR for multilingual scripts (Arabic, Latin, Korean, Japanese, Bangla, and Hindi) and fine-tuned PaddleOCR PP-OCRv5 for Chinese and English, consistent with the recognition strategy used in the evaluation pipeline.
+\end{itemize}
+
+%----------------------------------------------------------------------
+\section{Related Works}
+\label{sec:related}
+%----------------------------------------------------------------------
+
+In recent years, significant advancements have been made in
+document text extraction and recognition. This section reviews and highlights
+the methodologies employed and the results of previous studies to establish a
+foundation for our proposed approach. Li et al.~\cite{b14} have introduced HTR-VT, a data-efficient handwritten text recognition framework that uses a Vision
+Transformer (ViT) encoder combined with CNN-based feature extraction,
+sharpness-aware optimization, and span masking regularization, establishing new
+benchmarks on large-scale datasets without extensive pretraining or external
+data. Ye et al.~\cite{b15} have proposed TextSSR, a novel diffusion-based pipeline
+for synthesizing high-quality scene text recognition training data focused on
+accuracy, realism, and scalability. Du et al.~\cite{b16} have implemented
+Instruction-Guided Scene Text Recognition (IGTR), a novel paradigm that recasts
+Scene Text Recognition (STR) as a cross-modal instruction learning problem,
+achieving superior recognition accuracy on English and Chinese benchmarks while
+maintaining a small model size (24.1~M) and fast inference speed.\par
+Selvam et al.~\cite{b17} have proposed an advanced STR model based on the
+encoder-decoder framework, integrating diverse attention mechanisms including Adaptive Multi-Head Self-Attention (AMHSA) and Attention-Filtered LSTM (AFLSTM), demonstrating superior performance over existing methods. Alhefdhi et al.~\cite{b18} have presented novel work focused on creating the Real Estate and Judicial Documents dataset (REJD) for Arabic handwritten text recognition, utilizing a ResNet-50 deep learning model. Chen et al.~\cite{b19} have designed the Local and Global Attention Network (LGANet) for Scene Chinese Recognition
+(SCTR), utilizing Adaptive Position Encoding (APE) within a transformer
+encoder-decoder framework. Mahesha et al.~\cite{b20} have developed a double-edge
+method for YOLOv8n for scene text detection employing benchmark datasets like CTW1500 and MSRA-TD500.\par
+Gandomkar et al.~\cite{b21} have proposed a two-stage OCR system for cursive scripts using YOLOv5 for character localization followed by an MLP for sequence reconstruction. Da et al.~\cite{b22} have utilized SlimEMSC-YOLO, a lightweight YOLOv8n-based model for Uyghur text detection, achieving 12\% fewer parameters and 14\% less computation while improving mAP by 0.3\%. The shortcomings of the
+existing research are reported in Table~\ref{tab:related}.
+
+\begin{table}[htbp]
+\caption{A brief comparison and potential limitations of existing methods}
+\label{tab:related}
+\renewcommand{\arraystretch}{1.1}
+\begin{center}
+\scriptsize
+\begin{tabular}{>{\raggedright\arraybackslash}p{1.2cm}
+                >{\raggedright\arraybackslash}p{1.5cm}
+                >{\raggedright\arraybackslash}p{1.3cm}
+                >{\raggedright\arraybackslash}p{3.0cm}}
+\hline
+\textbf{Author} & \textbf{Datasets} & \textbf{Baseline Model} & \textbf{Limitations} \\
+\hline
+Kusuma et al.~\cite{b23} & In-house dataset & YOLOv4 + PaddleOCR &
+  Evaluation lacks reproducibility; fails to specify evaluation dataset or metrics; no baseline comparison or ablation study. \\
+\hline
+Maung et al.~\cite{b24} & Handwritten Grapheme~\cite{b25}; Bangla Lekha~\cite{b26}; Synthetic Bangla~\cite{b27} &
+  YOLOv8; EfficientNet-B4; Word2Vec &
+  Basic preprocessing inadequate for overlapping characters; recognition stage creates throughput bottleneck; correction stage introduces high latency. \\
+\hline
+Gorecki et al.~\cite{b28} & Hybrid in-house CT images & YOLOv11n &
+  Detection only; trained on limited single-modality dataset; generalizability not assessed. \\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+Cross-attention mechanisms have shown consistent benefit in tasks requiring fusion of features from structurally different sources. Wu et al.~\cite{b29} propose an LLM-enhanced multimodal fusion framework that uses a multi-attention mechanism to jointly learn single-domain and cross-domain preferences, demonstrating that fusing heterogeneous feature sources via attention produces richer representations than simple concatenation. Their image fusion extension~\cite{b31} further shows that spatially-aware cross-attention better aligns feature distributions across domains with different statistical properties. Wu et al.~\cite{b32} introduce a tag-enriched multi-attention design that integrates visual, textual, and semantic features across domains, which directly parallels our use of cross-attention to merge the semantic and spatial branches of the YOLOv11 neck. Additionally, contrastive prompt clustering~\cite{b30} demonstrates that attention-based feature separation produces sharper class boundaries, a property relevant to our per-script localisation task where different script classes must be distinguished within a shared feature space.
+
+%----------------------------------------------------------------------
+\section{Methodology}
+\label{sec:method}
+%----------------------------------------------------------------------
+
+The framework employs our proposed YOLO11 architecture integrated
+with EasyOCR for text extraction. The application allows users to upload a
+desired image and select the target translation language from provided options
+to obtain translated text imposed on the original image. Upon successful image
+upload, the YOLO model detects and returns the bounding boxes enclosing the
+text. These bounding boxes are passed to a cropper that extracts the enclosed
+image region and forwards it to the OCR model for text extraction. The
+extracted text is cleaned and imposed on the original image within the
+respective bounding box. The complete framework is presented in
+Fig.~\ref{fig:pipeline}.
+
+\begin{figure*}
+ \centering
+ \includegraphics[width = 0.9\textwidth]{image1.png}
+ \caption{Visual representation of the developed framework. It consists of three modules: text detection using a YOLOv11 baseline integrated with MS-CBAM and a Cross-Attention block, OCR-driven recognition of the detected text, and translation into the target language selected by the user. The entire framework is integrated into an end-to-end web application for user convenience.}
+ \label{fig:pipeline}
+\end{figure*}
+
+The framework operates as a three-stage pipeline. First, a modified YOLOv11 detector with MS-CBAM and Cross-Attention produces oriented bounding boxes around text regions, classifying each by script type. Second, each detected region is cropped and passed to a script-appropriate OCR engine: EasyOCR for multilingual scripts and fine-tuned PaddleOCR for Chinese and English. Third, the recognised text is translated via Google Translate and overlaid on the original image. The following subsections describe each stage in detail.
+
+
+\subsection{Data Preprocessing and Exploration}
+
+The experimentation utilized the ICDAR MLT-2019 dataset for the end-to-end
+text detection task. The dataset contains 10,000 images with every 1,000 images
+representing a language class. The dataset contains 12 classes: Arabic,
+English, French, Chinese, Korean, German, Japanese, Italian, Bangla, Hindi,
+Latin, and Other. The ``Other'' class represents unreadable text detected in the
+image, introduced to reduce false positives. The total of 10,000 images is
+split into an 80-20 ratio, with 8,000 training images and 2,000 validation
+images. To ensure proper training without inducing bias, images from each class
+are divided equally: 800 images per class in the training set and 200 in the
+validation set. The visual distribution of the dataset is presented in
+Fig.~\ref{fig:dataset}.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=\columnwidth]{image2.png}}
+\caption{Dataset class-wise distribution.}
+\label{fig:dataset}
+\end{figure}
+
+\subsection{Proposed Architecture}
+
+The proposed architecture extends YOLOv11 with channel attention and two novel convolutional blocks: the Multi-Scale CBAM (MS-CBAM)~\cite{b33} and the Cross-Attention block, targeting improved detection of multilingual scene text on benchmarks such as ICDAR. The complete customized architecture is shown in Fig.~\ref{fig:yolo}.
+
+\begin{figure*}
+   \centerline{\includegraphics[width=0.9\textwidth]{image3.png}}
+\caption{The customized YOLOv11 architecture is employed to the developed framework for text detection.}
+\label{fig:yolo}
+\end{figure*}
+
+\subsubsection{Channel Attention}
+
+The channel attention mechanism~\cite{b34}, illustrated in Fig.~\ref{fig:channel}, selectively emphasises informative channels while suppressing less useful ones. Given an input feature map of dimension $(B, C, W, H)$, adaptive average pooling first squeezes each channel's spatial map into a single value, producing a compact global descriptor of shape $(B, C, 1, 1)$. This descriptor is passed through a $1{\times}1$-convolution bottleneck that models channel-wise dependencies, followed by a sigmoid activation that maps each channel to a weight in $[0, 1]$. Multiplying these weights with the input yields the channel-weighted feature map, in which task-relevant channels are amplified and irrelevant ones are attenuated.
+
+\begin{figure*}[htbp]
+\centerline{\includegraphics[width=0.82\textwidth]{ieee_access_final_v2/figures/image4_2.png}}
+\caption{Channel Attention architecture.}
+\label{fig:channel}
+\end{figure*}
+
+\subsubsection{Multi-Scale Spatial Attention (MS-SA)}
+
+Unlike the traditional spatial attention module~\cite{b35} that uses a single fixed kernel, the proposed MS-SA module captures spatial relationships at multiple receptive-field scales. Fig.~\ref{fig:mssa} shows the detailed design. The MS-SA module first aggregates channel information of the input feature map $(B, C, W, H)$ by applying max-pooling and average-pooling along the channel axis, producing a two-channel descriptor of shape $(B, 2, W, H)$ that captures complementary spatial statistics.
+
+The concatenated feature map is processed in parallel by three separate
+convolutions with kernel sizes $3\times3$, $5\times5$, and $7\times7$. These
+output branches are concatenated and convolved by a $1\times1$ convolution to
+produce a single attention score map $(B, C, 1, 1)$. A sigmoid activation
+converts the attention scores to attention weights scaled between 0 and 1, which
+are applied to the final feature map to produce a refined spatial feature map.
+
+\begin{figure*}[htbp]
+\centerline{\includegraphics[width=0.88\textwidth]{ieee_access_final_v2/figures/image5_2.png}}
+\caption{Multi-Scale Spatial Attention architecture.}
+\label{fig:mssa}
+\end{figure*}
+
+\subsubsection{Multi-Scale CBAM (MS-CBAM)}
+
+The Multi-Scale Convolutional Block Attention Module (MS-CBAM) sequentially integrates channel attention and the proposed Multi-Scale Spatial Attention (MS-SA) to refine feature maps along both dimensions. Fig.~\ref{fig:mscbam} shows the MS-CBAM design. The channel attention module is first applied to recalibrate the importance of each channel, and the resulting channel-weighted feature map is then passed through MS-SA. This two-stage design allows the network to learn \emph{what} to focus on (via channels) and \emph{where} to focus (via spatial locations) in a hierarchical manner.
+
+\begin{figure*}[htbp]
+\centerline{\includegraphics[width=0.75\textwidth]{image6.png}}
+\caption{Multi-Scale CBAM architecture.}
+\label{fig:mscbam}
+\end{figure*}
+
+\subsubsection{Cross-Attention Block}
+The Cross-Attention block is placed immediately after the C2PSA module (output: 1024 channels) in the YOLOv11 neck, as marked in Fig.~\ref{fig:yolo}~\cite{b36}, and its internal dataflow is detailed in Fig.~\ref{fig:crossattn}. At 480$\times$480 input resolution, the C2PSA output has spatial dimensions of 15$\times$15, giving a sequence length of 225 after spatial flattening.
+
+\begin{figure*}[htbp]
+\centerline{\includegraphics[width=0.88\textwidth]{ieee_access_final_v2/figures/cross_attention_block_2.png}}
+\caption{Cross-Attention block architecture. The C2PSA output $(B,1024,15,15)$ supplies the Query, while the MS-CBAM-refined feature map $(B,256,15,15)$ supplies the Key and Value sources. Scaled dot-product cross-attention is computed with $h{=}8$ heads, followed by output projection, residual addition, and Layer Normalisation. The fused $(B,1024,15,15)$ tensor is forwarded to the YOLOv11 detection head.}
+\label{fig:crossattn}
+\end{figure*}
+
+The block takes two inputs. The C2PSA output serves as the Query (Q)\textemdash{}the deep semantic branch carries strong confidence about text region locations, but at reduced spatial resolution after successive pooling operations. The Conv output after MS-CBAM ($c{=}256$) in the upper backbone path serves as the Key (K) and Value (V) source. Because this K/V source has already been processed by MS-CBAM, cross-attention draws from spatially-refined, attention-filtered features rather than raw feature maps. A learnable $1{\times}1$ convolution projects the K/V source from 256 to 1024 channels so that channel dimensionality matches the Query stream. Attention is then computed as:
+
+\begin{equation}
+\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right) \cdot V
+\end{equation}
+
+where $Q$, $K$, and $V$ are obtained by flattening the spatial dimensions of each feature map to shape $(B, S, C)$, with $S = H \times W$ and $C = 1024$. The output is reshaped back to $(B, C, H, W)$ matching the query spatial dimensions.
+
+This design addresses a specific limitation of deep feature maps for multilingual text: the C2PSA query branch knows \emph{where} text exists but has lost fine character details through pooling, whereas the MS-CBAM-refined K/V source already suppresses background noise and highlights relevant stroke patterns. Cross-attention therefore lets each query position selectively retrieve the most relevant character geometry from these refined features. This is particularly beneficial for Arabic diacritics that sit close to base characters, Bangla curved strokes, Chinese character stroke endpoints, and Hindi Matra-bar positions\textemdash{}all of which require fine spatial precision for correct localisation. The ablation study in Fig.~\ref{fig:ablation} confirms a measurable improvement in mAP50 when the cross-attention block is added over MS-CBAM alone.
+
+\subsection{Training Phase of Proposed Model}
+
+We train the detection and recognition modules of the multi-stage pipeline separately. For text detection, the pretrained YOLOv11 model from the Ultralytics suite (with COCO-pretrained weights) is fine-tuned on the ICDAR MLT-2019 and ICDAR ReCTS datasets rather than trained from scratch. All experiments are conducted in a Kaggle Jupyter environment equipped with two NVIDIA T4 GPUs and 15~GB RAM, using distributed training via the Ultralytics suite. The frameworks and libraries used are Ultralytics, PyTorch, and EasyOCR.
+
+\subsubsection{Text Detection Training}
+
+Initially, ICDAR format datasets were converted to YOLO dataset format to
+facilitate efficient training. Further, the training sets of the MLT-2019 and
+ReCTS datasets were split in an 80-20 ratio into train and validation subsets.
+Dataset YAML files were created as the main entry point for loading formatted
+datasets into PyTorch dataloaders. The hyperparameters and associated values
+utilized during model training are reported in Table~\ref{tab:hyper}, and the
+default augmentation parameter values are reported in Table~\ref{tab:aug}.
+
+\begin{table}[htbp]
+\caption{Hyperparameters and Associated Values During Training Phase}
+\label{tab:hyper}
+\begin{center}
+\begin{tabular}{|l|c|}
+\hline
+\textbf{Hyperparameter} & \textbf{Initial Value} \\
+\hline
+Image size & 480 \\
+Batch size & 64 \\
+Epochs & 100 \\
+cos\_lr (Cosine Learning Rate) & True \\
+Device & 0,1 (two GPU) \\
+Seed (deterministic results) & 42 \\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\begin{table}[htbp]
+\caption{Configuration of Data Augmentation Parameters}
+\label{tab:aug}
+\begin{center}
+\begin{tabular}{|l|c|}
+\hline
+\textbf{Augmentation Hyperparameter} & \textbf{Value} \\
+\hline
+hsv\_h (hue) & 0.015 \\
+hsv\_s (saturation) & 0.7 \\
+hsv\_v (brightness) & 0.4 \\
+Translate & 0.1 \\
+Scale & 0.5 \\
+Flip lr & 0.5 \\
+Mosaic & 1.0 \\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\subsubsection{Text Recognition Training}
+
+We adopt two recognition strategies, one per dataset. (1)~For MLT-2019, EasyOCR is used because it ships with pretrained models for each script; the script-specific OCR model is selected at inference time based on the class label predicted by the YOLO detector. (2)~For ReCTS 2019, which contains only Chinese and English, the pretrained PaddleOCR PP-OCRv5~\cite{b37} model is fine-tuned on the Chinese-English dictionary for 30 epochs using the cropped text regions and their ground-truth labels. This fine-tuning step significantly improves the recognition metrics. The results are reported in Tables~\ref{tab:classwise},~\ref{tab:detection}, and~\ref{tab:recognition}.
+
+\subsubsection{Web Application Development}
+
+The proposed framework is integrated into a web application developed in Python with Gradio and deployed on Hugging Face Spaces. The application operates as a two-stage translation pipeline that enables real-time conversion of detected scene text into the target language selected by the user. As illustrated in Fig.~\ref{fig:webapp}, the end-to-end pipeline delivers consistent results under a production environment. The system is hosted on cloud infrastructure with two virtual CPUs and 16~GB of RAM. The proposed model comprises 10.49M parameters and achieves an end-to-end inference time of approximately 193~ms per image on CPU and 72~ms per image on an NVIDIA T4 GPU, demonstrating suitability for both resource-constrained and high-throughput deployment environments. The live application is accessible at
+\href{https://huggingface.co/spaces/sai-santhosh/Text_Translation_Pipeline}{huggingface.co/spaces/sai-santhosh/Text\_Translation\_Pipeline}~\cite{b38}.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=\columnwidth]{image7.png}}
+\caption{User interface of the developed web application.}
+\label{fig:webapp}
+\end{figure}
+
+
+\begin{table}[htbp]
+\caption{Deployment and Inference Characteristics of the Proposed Framework}
+\label{tab:deployment}
+\begin{center}
+\begin{tabular}{|l|c|}
+\hline
+\textbf{Metric} & \textbf{Value} \\
+\hline
+Model Parameters & 10.49M \\
+GPU Inference Time (NVIDIA T4) & $\sim$72~ms/image \\
+CPU Inference Time (2 vCPUs) & $\sim$193~ms/image \\
+Deployment Platform & Hugging Face Spaces \\
+Deployment Cost & Free tier (\$0) \\
+RAM & 16~GB \\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\subsubsection{Pipeline Integration}
+
+The fine-tuned detection and recognition models are combined into a pipeline for
+faster and efficient inference. The input image is first passed to the detection
+model, which detects text-containing regions and returns bounding boxes. Each
+detected text component is then extracted from the image and passed to the OCR
+model for text extraction. The extracted text is subsequently cleaned and
+returned.
+
+%----------------------------------------------------------------------
+\section{Experiment Results and Analysis}
+\label{sec:results}
+%----------------------------------------------------------------------
+
+This section comprehensively evaluates the developed pipeline's
+performance through various well-established metrics. The model's learning
+dynamics during training are first examined, followed by benchmarking against
+state-of-the-art datasets. Finally, the pipeline is assessed on end-to-end
+detection, recognition, and supplementary translation tasks.
+
+\subsection{Empirical Findings}
+
+To understand the model's training progression, several pivotal metrics are
+analyzed:
+
+\begin{itemize}
+  \item \textbf{Box loss} measures the accuracy of predicted text bounding boxes in comparison with ground-truth boxes. A lower loss value indicates accurate text localization.
+  \item \textbf{Classification loss} quantifies the classification ability of the model. A lower loss indicates accurate classification of target objects.
+  \item \textbf{Distribution Focal Loss (DFL)} improves the accuracy of bounding box regression by focusing on complex samples.
+  \item \textbf{Precision} calculates the percentage of true positive samples among all positive predictions.
+  \item \textbf{Recall} measures the proportion of actual positive samples that the model correctly identifies.
+  \item \textbf{mAP50} indicates the mean average precision value at an IoU threshold set to 0.5.
+  \item \textbf{mAP50-95} calculates mean average precision values across multiple IoU thresholds ranging from 0.5 to 0.95.
+\end{itemize}
+
+\subsection{MLT-2019 Evaluation}
+
+Fig.~\ref{fig:mlt_metrics} outlines the performance evaluation of the developed framework using standard metrics during the training phase. It has been observed that the box loss decreases consistently as the number of epochs progresses for both the training and validation sets, which reflects the high text detection accuracy. Classification loss depicts a steady decrease, indicating reliable convergence. DFL loss shows a stiff initial decline followed by linear convergence. Moreover, the mAP50 score rises consistently with epochs, which demonstrates the robust text detection ability. Precision rises quickly and remains high, which confirms steady minimization of false positives. Overall, these metric trajectories show stable optimization, optimum generalization, and effective detection performance.
+
+\begin{figure*}[htbp]
+  \centering
+  \includegraphics[width= 1.0\textwidth]{loss-mAP.png}
+  \caption{Performance evaluation of the text detection network on the MLT-2019 dataset during model training over 100 epochs. (a) Box loss, (b) Classification loss, (c) DFL loss, (d) mAP50 score, (e) mAP50-95 score, (f) Precision and (g) Recall score.}
+  \label{fig:mlt_metrics}
+\end{figure*}
+
+Table~\ref{tab:classwise} presents a detailed overview of the class-wise
+performance of the detection model on the MLT dataset. The results show that the model performs extremely well on Indic languages. It is also noted that performance on Chinese, Korean, and Japanese is comparatively higher given the complex characteristics of these languages.
+
+\begin{table}[htbp]
+\caption{Class-wise Evaluation of the YOLO Model on the MLT-2019 Dataset}
+\label{tab:classwise}
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+\textbf{Class} & \textbf{Precision} & \textbf{Recall} & \textbf{mAP0.5} & \textbf{mAP0.5-0.95} \\
+\hline
+Arabic   & 87.2 & 83.2 & 87.4 & 71.8 \\
+Latin    & 84.0 & 64.8 & 73.5 & 57.3 \\
+Chinese  & 82.5 & 71.6 & 78.4 & 63.0 \\
+Korean   & 83.5 & 69.2 & 79.4 & 62.5 \\
+Japanese & 75.5 & 55.9 & 62.5 & 48.1 \\
+Bangla   & 90.0 & 93.9 & 95.6 & 82.1 \\
+Hindi    & 96.2 & 96.5 & 98.3 & 89.7 \\
+Symbols  & 43.7 & 11.2 & 15.4 & 10.2 \\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+Fig.~\ref{fig:mlt_eval} provides a visual representation of the model's
+evaluation on various metrics such as F1-confidence score, precision-recall curve, and confusion matrices.
+
+\begin{figure*}
+  \centering
+  \includegraphics[width= 1.0\textwidth]{MLT-2019-evalution.png}
+  \caption{Model evaluation metrics on MLT-2019 dataset: (a)~F1-confidence score indicating the F1-score for each specific confidence score, (b)~precision-recall curve on class-wise and overall test dataset, (c)~confusion matrix.}
+  \label{fig:mlt_eval}
+\end{figure*}
+
+\subsection{ReCTS 2019 Evaluation}
+
+Fig.~\ref{fig:rects_metrics} shows multiple visual representations of model
+evaluation metrics monitored during training on the ReCTS dataset. It is clearly
+evident that the model converged smoothly and achieved performance similar to
+the validation split, indicating minimal or no overfitting.
+
+\begin{figure*}[htbp]
+  \centering
+  \includegraphics[width = 1.0\textwidth]{ReCTS-training.png}
+  \caption{Model performance evaluation on ReCTS dataset during training phase. (a) Box loss, (b) classification loss, (c) DFL loss, (d) mAP50 score, (e) mAP50-95 score, (f) Precision, and (g) Recall score.}
+  \label{fig:rects_metrics}
+\end{figure*}
+
+Following training, Fig.~\ref{fig:rects_eval} presents the confusion matrix, F1-confidence curve, and precision-recall curve. Most text categories, including Latin and Arabic, achieve high classification accuracy with dense diagonal values. The F1-Confidence curve demonstrates strong F1 scores across a range of detection confidences, with the overall system reaching a peak F1 of 0.73 at a confidence threshold of 0.378. The Precision-Recall curve validates robust
+post-training behavior, with an overall mAP of 0.751 at 0.5 IoU.
+
+\begin{figure*}[htbp]
+  \centering
+  \includegraphics[width= 1.0\textwidth]{ReCTS-evaluation.png}
+  \caption{Performance evaluation of the text detection network on ReCTS test dataset. (a) F1-confidence score, (b) precision-recall curve, and (c) Confusion matrix.}
+  \label{fig:rects_eval}
+\end{figure*}
+
+The model is extensively evaluated on both MLT-2019 and ReCTS to validate its robustness and generalization. On MLT-2019, the system achieved strong localization, high mAP scores at standard thresholds, and consistent classification across Arabic, Latin, Chinese, Korean, Japanese, Hindi, Bangla, and other scripts. On ReCTS, it demonstrated effective detection of complex Chinese text instances. To empirically demonstrate the efficacy of the proposed attention modules, Fig.~\ref{fig:attention} presents a qualitative analysis comparing detected text instances with their corresponding attention heatmaps. This visualization highlights the model's ability to selectively prioritize textual features while suppressing background noise.
+
+\begin{figure}[htbp]
+  \centering
+  \begin{subfigure}[b]{0.31\columnwidth}
+    \includegraphics[width=\linewidth]{image28.jpg}
+    \caption{Original image}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.31\columnwidth}
+    \includegraphics[width=\linewidth]{image30.png}
+    \caption{Attention map}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.31\columnwidth}
+    \includegraphics[width=\linewidth]{image29.png}
+    \caption{Detected text}
+  \end{subfigure}
+  \caption{\textbf{Visual demonstration on the impact of attention mechanism.}
+  \textbf{(a)}~The original input image. \textbf{(b)}~The corresponding feature
+  attention map, illustrating how the model focuses on high-frequency textual
+  components such as character edges and stroke patterns. \textbf{(c)}~The
+  final detected text instances with Oriented Bounding Boxes (OBB).}
+  \label{fig:attention}
+\end{figure}
+
+In terms of detection performance, as shown in Table~\ref{tab:detection}, the
+model demonstrated robust localization capabilities on the ReCTS 2019 test set, it has achieved a precision of 92.69\% and an H-mean of 86.85\%. The performance on the ICDAR MLT-2019 validation set is also competitive, with an H-mean of 75.16\%. The slight drop in performance on MLT-2019 compared to
+ReCTS can be attributed to the significantly higher linguistic diversity and unconstrained nature of the MLT dataset.
+
+\begin{table}[htbp]
+\caption{Text Detection Results on MLT-2019 and ReCTS 2019 datasets using Developed Framework}
+\label{tab:detection}
+\begin{center}
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Dataset} & \textbf{Precision} & \textbf{Recall} & \textbf{H-mean} \\
+\hline
+MLT 2019   & 77.9  & 72.6 & 75.16 \\
+ReCTS 2019 & 92.69 & 81.7 & 86.85 \\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+The recognition results in Table~\ref{tab:recognition} reveal a similar trend. The system achieved a Character Error Rate (CER)~\cite{b39} of 14.51\% and a 1-NED~\cite{b40} score of 0.8566 on the ReCTS dataset. However, the multilingual complexity of MLT-2019 presented a greater challenge, resulting in a CER of 30.16\% and a Word Error Rate (WER)~\cite{b41} of 58.93\%. Despite lower exact-match accuracy (51.61\%) on MLT-2019, the relatively high 1-NED score (0.7063) suggests that while the model may miss specific characters or diacritics in diverse languages, it successfully captures the majority of semantic content.
+
+\begin{table}[htbp]
+\caption{Text Recognition Results on MLT-2019 and ReCTS 2019}
+\label{tab:recognition}
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+\textbf{Dataset} & \textbf{CER} & \textbf{WER} & \textbf{1-NED} & \textbf{Accuracy} \\
+\hline
+MLT 2019   & 0.3016 & 0.5893 & 0.7063 & 51.61 \\
+ReCTS 2019 & 0.1451 & 0.3513 & 0.8566 & 64.87 \\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\subsection{Supplementary End-to-End Translation Evaluation}
+
+ICDAR MLT-2019 and ReCTS do not provide official reference translations, so
+translation quality cannot be reported as an official benchmark result. To
+support reproducible supplementary analysis, we release a stratified
+100-image English-reference subset drawn from the held-out portion of ICDAR
+MLT-2019. The subset contains 14 Arabic, 14 Bangla, 16 Chinese, 14 Hindi, 14
+Japanese, 14 Korean, and 14 Latin images. English references were produced
+through a machine-assisted annotation workflow, and the release preserves
+per-row review flags to support subsequent human validation.
+
+Table~\ref{tab:translation} reports the saved end-to-end evaluation results.
+The pipeline produced 70 normalized exact matches and 84 normalized contains
+matches, with an average normalized chrF score of 0.9452 over all 100 images.
+All 100 inference requests completed successfully and contain both predicted
+and reference translations. Because the released references are
+machine-assisted drafts and do not yet contain an independent second-annotator
+validation, these values are reported as supplementary repository results and
+not as official ICDAR/ReCTS leaderboard metrics.
+
+\begin{table*}[htbp]
+\caption{Supplementary End-to-End Translation Results on the Released ICDAR Subset}
+\label{tab:translation}
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+\hline
+\textbf{Images} & \textbf{Exact Matches} & \textbf{Contains Matches} & \textbf{Avg. Norm. chrF} \\
+\hline
+100 & 70 & 84 & 0.9452 \\
+\hline
+\end{tabular}
+\end{center}
+\end{table*}
+
+Table~\ref{tab:ablation} presents the incremental ablation study of the proposed architecture, where each component is individually evaluated to quantify its contribution to overall detection performance on the MLT-2019 validation set. All configurations are trained under identical hyperparameters (imgsz=480, batch=64, epochs=100, seed=42) using the YOLOv11s-OBB scale as the backbone.
+
+\begin{table}[htbp]
+\caption{Incremental Ablation Study on MLT-2019 Validation Set}
+\label{tab:ablation}
+\renewcommand{\arraystretch}{1.1}
+\begin{center}
+\scriptsize
+\begin{tabular}{|>{\raggedright\arraybackslash}p{3.2cm}|c|c|c|c|}
+\hline
+\textbf{Configuration} & \textbf{Prec.} & \textbf{Rec.} & \textbf{mAP50} & \textbf{mAP50-95} \\
+\hline
+Stock YOLOv11s-OBB             & 0.777 & 0.591 & 0.657 & 0.534 \\
++ BiFPN Neck                   & 0.784 & 0.586 & 0.658 & 0.524 \\
++ BiFPN + Std CBAM             & 0.791 & 0.573 & 0.650 & 0.512 \\
++ BiFPN + MS-CBAM              & 0.788 & 0.589 & 0.657 & 0.526 \\
++ BiFPN + CrossAttn only       & 0.767 & 0.592 & 0.656 & 0.520 \\
++ BiFPN + MS-CBAM + CrossAttn  & \textbf{0.810} & \textbf{0.591} & \textbf{0.661} & \textbf{0.532} \\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+The results confirm three key findings. First, MS-CBAM (mAP50=0.657) outperforms standard single-kernel CBAM (mAP50=0.650), validating the multi-scale spatial attention design. Second, the Cross-Attention block provides an independent contribution when added to the full model \textemdash{ precision rises to 0.810 and mAP50 to 0.661, the highest across all configurations. Third, the full model combining both MS-CBAM and Cross-Attention achieves the best overall performance, confirming that the two modules are complementary rather than redundant. Fig.~\ref{fig:ablation} provides a visual summary of these results.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=\columnwidth]{image31.png}}
+\caption{Component-wise performance evaluation over the MLT-2019 dataset.}
+\label{fig:ablation}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \begin{subfigure}[b]{\columnwidth}
+    \includegraphics[width=\linewidth]{image32.png}
+    \caption{MLT-2019}
+  \end{subfigure}\\[4pt]
+  \begin{subfigure}[b]{\columnwidth}
+    \includegraphics[width=\linewidth]{image33.png}
+    \caption{ReCTS}
+  \end{subfigure}
+  \caption{Qualitative analysis of the framework on test images from each dataset.}
+  \label{fig:qualitative}
+\end{figure}
+
+Fig.~\ref{fig:qualitative} demonstrates the performance of the proposed
+framework over complex street-view images, displaying detections on images
+sampled from each dataset along with recognized text from each detected crop.
+
+\subsection{Comparative Analysis}
+
+Table~\ref{tab:rects_compare} benchmarks the proposed method against established
+baselines including FOTS~\cite{b42} and MaskTextSpotter~\cite{b43}. The results
+reveal that our approach achieves a dominant 1-NED score of 85.66\%,
+significantly outperforming the state-of-the-art average of $\sim$65--72\%.
+Although Recall (81.7\%) is lower than some detection-focused models, the high
+Precision (92.69\%) and exceptional 1-NED score confirm that when the model
+detects text, the subsequent recognition is highly accurate.
+
+\begin{table}[htbp]
+\caption{Performance Evaluation of Proposed Method vs.\ State of the Art on ReCTS Dataset}
+\label{tab:rects_compare}
+\renewcommand{\arraystretch}{1.1}
+\begin{center}
+\scriptsize
+\begin{tabular}{|>{\raggedright\arraybackslash}p{1.0cm}|>{\raggedright\arraybackslash}p{1.6cm}|c|c|c|c|}
+\hline
+\textbf{Author} & \textbf{Method} & \textbf{Prec.} & \textbf{Rec.} & \textbf{H-mean} & \textbf{1-NED} \\
+\hline
+Liu~\cite{b42}   & FOTS             & 78.3  & 82.5          & 80.31          & 50.8 \\
+Liao~\cite{b43}  & MaskTextSpotter  & 89.3  & 88.8          & 89.0           & 67.8 \\
+Wang~\cite{b44}  & AE TextSpotter   & 92.6  & \textbf{91.0} & \textbf{91.8}  & 71.8 \\
+Liu~\cite{b45}   & ABCNet v2        & 93.6  & 87.5          & 90.4           & 62.7 \\
+Huang~\cite{b46} & SwinTextSpotter  & \textbf{94.1} & 87.1 & 90.4  & 72.5 \\
+\hline
+Ye~\cite{b47}    & DeepSolo         & 89.0  & 92.6  & 90.7  & 78.3 \\
+\hline
+Huang~\cite{b48} & ESTextSpotter    & 91.3  & 94.1  & 92.7  & 78.1 \\
+\hline
+-- & Proposed Method & 92.69 & 81.7 & 86.86 & \textbf{85.66} \\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+Recent transformer-based end-to-end spotters such as DeepSolo~\cite{b47} and ESTextSpotter~\cite{b48} achieve higher detection H-mean on ReCTS (90.7\% and 92.7\% respectively) through dedicated GPU-based transformer architectures. However, their end-to-end recognition scores (1-NED of 78.3\% and 78.1\% respectively) remain lower than our system's 85.66\%. For a translation-oriented pipeline, recognition fidelity is the primary metric \textemdash{ a correctly detected but poorly recognised text region produces an incorrect translation regardless. Our framework additionally operates on CPU-only cloud infrastructure (2 vCPUs, 16 GB RAM) and handles 8 script classes simultaneously, whereas transformer-based spotters are typically trained for single-language settings and require GPU inference.}
+
+Table~\ref{tab:mlt_compare} benchmarks results on the MLT-2019 dataset for the
+end-to-end detection and recognition task. The results suggest that the research
+progresses in the right direction. It is noteworthy that not many researchers
+have published results on the MLT-2019 dataset; the comparison references
+methods from the leader-board of the test dataset.
+
+\begin{table}[htbp]
+\caption{Performance Comparison of the Proposed Method with State of the Art on MLT-2019 Dataset}
+\label{tab:mlt_compare}
+\renewcommand{\arraystretch}{1.1}
+\begin{center}
+\scriptsize
+\begin{tabular}{|>{\raggedright\arraybackslash}p{1.1cm}|>{\raggedright\arraybackslash}p{1.4cm}|c|c|c|c|}
+\hline
+\textbf{Author} & \textbf{Method} & \textbf{Prec.} & \textbf{Rec.} & \textbf{H-mean} & \textbf{1-NED} \\
+\hline
+Patel et al.~\cite{b49} & E2E-MLT    & 37.44\% & 20.47\% & 26.36\% & 26.39\% \\
+Yan et al.~\cite{b50}   & TH-DL-v1   & 38.10\% & 31.51\% & 34.49\% & 42.76\% \\
+Baek et al.~\cite{b51}  & CRAFTS     & \textbf{66.21\%} & \textbf{36.41\%} & \textbf{46.99\%} & 42.52\% \\
+\hline
+-- & Proposed Method & 38.47\% & 35.85\% & 37.11\% & \textbf{70.63\%} \\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+%----------------------------------------------------------------------
+\section{Discussion and Limitations}
+\label{sec:discussion}
+%----------------------------------------------------------------------
+
+The developed framework has been extensively evaluated on publicly
+available benchmark datasets containing Indic scene texts and complex Chinese
+signboard images, and the obtained performance demonstrates robustness
+irrespective of source images. However, the intrinsic analysis on the
+performance of the framework with some potential limitations is discussed in
+this section.
+
+\subsection{Insightful Performance Analysis}
+
+The evaluation highlights a distinct performance variance between the
+specialized ReCTS dataset and the diverse MLT-2019 benchmark. The model
+achieved a superior H-mean of 86.85\% on ReCTS compared to 75.16\% on
+MLT-2019. This disparity is primarily due to the nature of the data: ReCTS
+consists of high-contrast signboards, which allow the MS-CBAM attention
+mechanism to effectively distinguish text from the background. Conversely,
+MLT-2019 introduces significantly higher complexity with ten different scripts
+and varied geometric distortions, naturally straining the model's generalization
+capabilities.
+
+\subsection{Disparity Analysis}
+
+A comparison of overall performance between the two benchmark datasets reveals a significant difference in efficacy. The model obtains an H-mean of 86.85\% on ReCTS dataset, whereas it attains 75.16\% on the MLT-2019 dataset. This disparity is attributable to three main factors:
+
+\begin{itemize}
+  \item \textbf{Domain Specificity vs.\ Linguistic Diversity:} ReCTS comprises of Chinese signboards. These signboards are easy to process and analyze due to high contrast between foreground and background, which enables the MS-CBAM attention module to locate the text quite easily. On the other hand, MLT-2019 contains multilingual scene images with ten different scripts. Every script has a diverse text appearance, font style, patterns, etc., which leads to detecting and recognizing texts being more challenging.
+
+  \item \textbf{Recognition Engine Optimization:} The superior ReCTS recognition performance (14.51\% CER) is attributable to fine-tuning PaddleOCR specifically on Chinese and English characters, a step not applied to the MLT-2019 pipeline which relies on pretrained EasyOCR models. This targeted fine-tuning substantially reduces character-level errors for the structurally consistent Chinese script, whereas the greater linguistic diversity of MLT-2019 makes script-specific fine-tuning across all ten languages impractical within the current framework.
+
+  \item \textbf{Script Complexity:} The MLT-2019 dataset includes diverse scripts such as complex Indic scripts, East Asian scripts, and other popular globally recognized scripts in unconstrained environments. Although the developed framework effectively localizes text regions, capturing fine-grained morphological cues like diacritics and ligatures is still a non-trivial task. Despite that, the relatively higher WER of 58.93\% on MLT-2019 dataset compared to the structurally consistent characters of ReCTS dataset certainly demonstrates the robustness and superiority of the developed framework in natural scene images.
+\end{itemize}
+
+\subsection{Limitations and Failure Scenarios}
+
+Despite robust detection performance, specific scenarios were identified where the model faces challenges due to extreme geometric or stylistic variations.
+
+\begin{itemize}
+  \item \textbf{Curved Text:} The model occasionally fragments or misses curved text strings, which are common in Asian signboards. This occurs because the default anchor boxes in the YOLO-OBB architecture are primarily optimized for horizontal and vertical alignment.
+
+  \item \textbf{Artistic Fonts:} Highly stylized or ``graffiti-like'' text is sometimes misclassified or suppressed. The MS-CBAM attention module, designed to suppress background noise, can occasionally be overly aggressive, filtering out irregular stroke patterns in artistic typography as clutter.
+\end{itemize}
+
+Crucially, these failures are predominantly observed in the precise bounding or recognition stages rather than as total detection failures. In most instances, the model still correctly localizes the general text region, suggesting that these are edge cases addressable in future iterations through mechanisms such as rotation-aware anchors or deformable convolutions.
+Additionally, the absence of official reference translations in the ICDAR MLT-2019 and ReCTS benchmarks precludes official translation leaderboard evaluation. The released 100-image English-reference subset enables supplementary normalized exact-match, contains-match, and chrF analysis, but its machine-assisted draft references require independent human validation before they can serve as a definitive parallel benchmark. Expanding and human-validating this parallel scene-text translation corpus is therefore a concrete direction for future work.
+
+%----------------------------------------------------------------------
+\section{Conclusion}
+\label{sec:conclusion}
+%----------------------------------------------------------------------
+
+This research addresses the enduring problem of effective text detection and recognition in multi-lingual, complex-scene, and unconstrained environments. In this work, an enhanced text detection module driven by YOLOv11, integrated with MS-CBAM and cross-attention mechanisms, is utilized to prioritize intrinsic textual feature descriptors in complex and noisy backgrounds for accurate text region detection. Moreover, the integration of the Easy/Paddle OCR engine created a functional end-to-end pipeline capable of recognizing the detected texts, followed by translating them into the target language text across diverse scripts.\par
+The experimental results validate the efficiency and robustness of the attention-based text detection network irrespective of image type, nature, and scripts. The framework achieves an H-mean of 75.16\% on the diverse ICDAR MLT-2019 dataset and a notable 86.85\% on the ReCTS dataset. Besides, the recognition metrics reveal a divergence in performance between detection and transcription. The framework has achieved promising 1-NED scores of 0.7063 and 0.8566 on the MLT-2019 and ReCTS datasets, respectively. On the released stratified 100-image supplementary English-reference subset, the complete OCR-plus-translation pipeline produced 70 normalized exact matches, 84 normalized contains matches, and an average normalized chrF score of 0.9452. These supplementary translation results are released with the evaluation outputs and should be interpreted separately from the official detection and recognition benchmark results. Together, the findings indicate that although the system frequently approximates the ground truth, achieving precise character-level accuracy in a multilingual context continues to pose a substantial challenge.
+
+\noindent\textbf{Future Directions}
+
+Building on these findings, several avenues for future work are identified:
+
+\begin{enumerate}
+  \item \textbf{End-to-End Trainable Networks:} Future work could explore a fully differentiable end-to-end network where recognition errors backpropagate to the text detection network, which enables the model to learn better bounding box alignments that aid text recognition.
+
+  \item \textbf{Transformer Integration for Recognition:} Replacing the
+  standard CNN-based recognizer with a Vision Transformer (ViT) or
+  language-aware decoder could significantly lower the Character Error Rate given the complexity of multilingual scripts.
+
+  \item \textbf{Lightweight Optimization:} Future work involves pruning and quantizing the model to facilitate deployment on edge devices such as mobile phones, enabling real-time translation without reliance on cloud-based GPUs.
+
+  \item \textbf{Synthetic Data Augmentation:} To address class imbalance in the confusion matrices, generating high-quality synthetic text images using Generative Adversarial Networks (GANs) could improve recall for minority languages.
+
+  \item \textbf{Human-Validated Translation Corpus:} The released 100-image supplementary subset should be independently reviewed by bilingual annotators and expanded into a larger parallel scene-text translation benchmark suitable for additional metrics such as BLEU and COMET.
+\end{enumerate}
+
+%----------------------------------------------------------------------
+\section*{Data and Code Availability}
+
+The manuscript source, implementation, released evaluation tables, and
+reproducibility scripts are available at
+\href{https://github.com/SaiSanthosh1508/End-to-End-Text-Translation-Pipeline}{github.com/SaiSanthosh1508/End-to-End-Text-Translation-Pipeline}.
+The released 100-image supplementary English-reference dataset is also
+available at
+\href{https://www.kaggle.com/datasets/rishiksaisanthosh/scene-text-translation-english-eval-subset}{kaggle.com/datasets/rishiksaisanthosh/scene-text-translation-english-eval-subset}.
+
+%----------------------------------------------------------------------
+\begin{thebibliography}{00}
+
+\bibitem{b1} T. R. S. Santhosh, ``End to end text translation pipeline,''
+  GitHub. Accessed: Aug.~8, 2026. [Online]. Available:
+  \url{https://github.com/SaiSanthosh1508/End-to-End-Text-Translation-Pipeline}
+
+\bibitem{b2} S. Long, X. He, and C. Yao, ``Scene text detection and recognition:
+  The deep learning era,'' \textit{Int. J. Comput. Vis.}, vol. 129, no. 1,
+  pp. 161--184, Jan. 2021, doi: 10.1007/s11263-020-01369-0.
+
+\bibitem{b3} R. Smith, ``An overview of the Tesseract OCR engine,'' in
+  \textit{Proc. 9th Int. Conf. Document Analysis and Recognition (ICDAR 2007)},
+  IEEE, Sep. 2007, pp. 629--633, doi: 10.1109/ICDAR.2007.4376991.
+
+\bibitem{b4} B. Shi, X. Bai, and C. Yao, ``An end-to-end trainable neural
+  network for image-based sequence recognition and its application to scene text
+  recognition,'' Jul. 2015. [Online]. Available:
+  \url{http://arxiv.org/abs/1507.05717}
+
+\bibitem{b5} A. Dosovitskiy et al., ``An image is worth 16x16 words:
+  Transformers for image recognition at scale,'' Jun. 2021. [Online]. Available:
+  \url{http://arxiv.org/abs/2010.11929}
+
+\bibitem{b6} R. M. Schmidt, ``Recurrent neural networks (RNNs): A gentle
+  introduction and overview,'' Nov. 2019. [Online]. Available:
+  \url{http://arxiv.org/abs/1912.05911}
+
+\bibitem{b7} M. Bleeker and M. de Rijke, ``Bidirectional scene text recognition
+  with a single decoder,'' Mar. 2020. [Online]. Available:
+  \url{http://arxiv.org/abs/1912.03656}
+
+\bibitem{b8} Q. Jiang, J. Wang, D. Peng, C. Liu, and L. Jin, ``Revisiting scene
+  text recognition: A data perspective,'' Jul. 2023. [Online]. Available:
+  \url{http://arxiv.org/abs/2307.08723}
+
+\bibitem{b9} J. Redmon, S. Divvala, R. Girshick, and A. Farhadi, ``You only look
+  once: Unified, real-time object detection,'' May 2016. [Online]. Available:
+  \url{http://arxiv.org/abs/1506.02640}
+
+\bibitem{b10} T.-Y. Lin et al., ``Microsoft COCO: Common objects in context,''
+  Feb. 2015. [Online]. Available: \url{http://arxiv.org/abs/1405.0312}
+
+\bibitem{b11} N. Nayef et al., ``ICDAR2019 robust reading challenge on
+  multi-lingual scene text detection and recognition -- RRC-MLT-2019,''
+  Jul. 2019. [Online]. Available: \url{http://arxiv.org/abs/1907.00945}
+
+\bibitem{b12} X. Liu et al., ``ICDAR 2019 robust reading challenge on reading
+  Chinese text on signboard.'' [Online]. Available:
+  \url{https://rrc.cvc.uab.es/?ch=12}
+
+\bibitem{b13} R. Khanam and M. Hussain, ``YOLOv11: An overview of the key
+  architectural enhancements,'' Oct. 2024. [Online]. Available:
+  \url{http://arxiv.org/abs/2410.17725}
+
+\bibitem{b14} Y. Li, D. Chen, T. Tang, and X. Shen, ``HTR-VT: Handwritten text
+  recognition with vision transformer,'' \textit{Pattern Recognit.}, vol. 158,
+  Feb. 2025, doi: 10.1016/j.patcog.2024.110967.
+
+\bibitem{b15} X. Ye, Y. Du, Y. Tao, and Z. Chen, ``TextSSR: Diffusion-based
+  data synthesis for scene text recognition,'' unpublished.
+
+\bibitem{b16} Y. Du, Z. Chen, Y. Su, C. Jia, and Y. G. Jiang,
+  ``Instruction-guided scene text recognition,''
+  \textit{IEEE Trans. Pattern Anal. Mach. Intell.}, vol. 47, no. 4,
+  pp. 2723--2738, 2025, doi: 10.1109/TPAMI.2025.3525526.
+
+\bibitem{b17} P. Selvam, S. N. Kumar, and S. Kannadhasan, ``An adaptive
+  multi-head self-attention coupled with attention filtered LSTM for advanced
+  scene text recognition,'' \textit{Int. J. Document Anal. Recognit.}, 2025,
+  doi: 10.1007/s10032-025-00523-z.
+
+\bibitem{b18} K. Alhefdhi, A. Alsalman, and S. Faizullah, ``Toward building a
+  domain-based dataset for Arabic handwritten text recognition,''
+  \textit{Electronics}, vol. 14, no. 12, Jun. 2025,
+  doi: 10.3390/electronics14122461.
+
+\bibitem{b19} Z. Chen, Y. Yi, C. Gan, Z. Tang, and D. Kong, ``Scene Chinese
+  recognition with local and global attention,'' \textit{Pattern Recognit.},
+  vol. 158, Feb. 2025, doi: 10.1016/j.patcog.2024.111013.
+
+\bibitem{b20} M. Mahesha, V. N. M. Aradhya, H. T. Basavaraju, and
+  S. Shivarudraswamy, ``DoubleYolo: Efficient scene text detection using double
+  edge method and YOLOv8n,'' \textit{Math. Model. Eng. Probl.}, vol. 12, no. 4,
+  pp. 1399--1408, 2025, doi: 10.18280/mmep.120430.
+
+\bibitem{b21} M. Gandomkar and S. Khoramipour, ``Optical character recognition
+  (OCR) in cursive scripts using object detection networks,''
+  \textit{Tabriz J. Electr. Eng. (TJEE)}, vol. 55, no. 1, 2025,
+  doi: 10.22034/tjee.2024.62945.4877.
+
+\bibitem{b22} R. Da, H. Xu, Y. Zhang, and L. Liu, ``SlimEMSC-YOLO: A Uyghur
+  text detection method,'' in \textit{Proc. 5th Int. Conf. Artificial Intelligence
+  and Industrial Technology Applications (AIITA 2025)}, IEEE, 2025,
+  pp. 960--966, doi: 10.1109/AIITA65135.2025.11048157.
+
+\bibitem{b23} T. Kusuma, S. Jyothi, G. Shruthi, S. Sheela, and C. N. Kumar,
+  ``Optical character recognition using YOLO4, Tesseract and PaddleOCR for text
+  extraction,'' in \textit{Proc. 3rd Int. Conf. Intelligent and Innovative
+  Technologies in Computing, Electrical and Electronics (IITCEE 2025)}, IEEE,
+  2025, doi: 10.1109/IITCEE64140.2025.10915347.
+
+\bibitem{b24} A. T. Maung, S. Salekin, and M. A. Haque, ``A hybrid approach to
+  Bangla handwritten OCR: Combining YOLO and an advanced CNN,''
+  \textit{Discover Artif. Intell.}, vol. 5, no. 1, Dec. 2025,
+  doi: 10.1007/s44163-025-00251-7.
+
+\bibitem{b25} A. Howard et al., ``Bengali.AI handwritten grapheme
+  classification,'' 2019.
+
+\bibitem{b26} M. Biswas et al., ``BanglaLekha-Isolated: A multi-purpose
+  comprehensive dataset of handwritten Bangla isolated characters,''
+  \textit{Data Brief}, vol. 12, pp. 103--107, 2017,
+  doi: 10.1016/j.dib.2017.03.035.
+
+\bibitem{b27} K. Roy, M. S. Hossain, P. Saha, and S. Rohan, ``Synthetic printed
+  words and test protocols data for Bangla OCR,'' Accessed: Dec.~16, 2025.
+  [Online]. Available:
+  \url{https://figshare.com/articles/dataset/Synthetic_Printed_Words_and_Test_Protocols_Data_for_Bangla_OCR/20186825/1}
+
+\bibitem{b28} A. Gorecki, J. K. Glowczewski, and M. Mazur-Milecka, ``Lung CT
+  text detection with YOLO: Leveraging synthetic datasets over OCR,'' in
+  \textit{Proc. Int. Conf. Human System Interaction (HSI)}, IEEE, 2025,
+  doi: 10.1109/HSI66212.2025.11142425.
+
+\bibitem{b29} W. Wu, Z. Chen, W. Zhang, S. Song, X. Qiu, X. Huang, F. Ma, and J. Xiao, ``LLM-Enhanced Multimodal Fusion for Cross-Domain Sequential Recommendation,'' arXiv:2506.17966, 2025.
+
+\bibitem{b30} W. Wu, Z. Chen, X. Ma, W. Zhang, X. Qiu, S. Song, X. Huang, F. Ma, and J. Xiao, ``Contrastive Prompt Clustering for Weakly Supervised Semantic Segmentation,'' arXiv:2508.17009, 2025.
+
+\bibitem{b31} W. Wu, S. Song, X. Qiu, X. Huang, F. Ma, and J. Xiao, ``Image Fusion for Cross-Domain Sequential Recommendation,'' in \textit{Companion Proc. ACM Web Conf. 2025}, pp. 2196--2202, 2025.
+
+\bibitem{b32} W. Wu, X. Chen, Z. Chen, J. Jiang, K. Tsang, X. Huang, F. Ma, and J. Xiao, ``Tag-Enriched Multi-Attention with Large Language Models for Cross-Domain Sequential Recommendation,'' arXiv:2510.09224, 2025.
+
+\bibitem{b33} S. Woo, J. Park, J.-Y. Lee, and I. S. Kweon, ``CBAM: Convolutional
+  block attention module,'' Jul. 2018. [Online]. Available:
+  \url{http://arxiv.org/abs/1807.06521}
+
+\bibitem{b34} J. Hu, L. Shen, S. Albanie, G. Sun, and E. Wu,
+  ``Squeeze-and-excitation networks,'' May 2019. [Online]. Available:
+  \url{http://arxiv.org/abs/1709.01507}
+
+\bibitem{b35} X. Zhu, D. Cheng, Z. Zhang, S. Lin, and J. Dai, ``An empirical
+  study of spatial attention mechanisms in deep networks,'' Apr. 2019.
+  [Online]. Available: \url{http://arxiv.org/abs/1904.05873}
+
+\bibitem{b36} H. Lin et al., ``CAT: Cross attention in vision transformer,''
+  Jun. 2021. [Online]. Available: \url{http://arxiv.org/abs/2106.05786}
+
+\bibitem{b37} C. Cui et al., ``PaddleOCR 3.0 technical report,'' Jul. 2025.
+  [Online]. Available: \url{http://arxiv.org/abs/2507.05595}
+
+\bibitem{b38} T. R. S. Santhosh, ``End to end text translation pipeline
+  application -- Hugging Face Spaces,'' Accessed: Aug.~8, 2026. [Online].
+  Available:
+  \url{https://huggingface.co/spaces/sai-santhosh/Text_Translation_Pipeline}
+
+\bibitem{b39} T. D K, J. James, D. P. Gopinath, and M. A. K,
+  ``Advocating character error rate for multilingual ASR evaluation,''
+  Oct. 2024. [Online]. Available:
+  \url{http://arxiv.org/abs/2410.07400}
+
+\bibitem{b40} H. Zhu, X. Meng, and G. Kollios, ``NED: An inter-graph node metric
+  based on edit distance,'' Feb. 2016. [Online]. Available:
+  \url{http://arxiv.org/abs/1602.02358}
+
+\bibitem{b41} C. Park, M. Chen, and T. Hain, ``Automatic speech recognition
+  system-independent word error rate estimation,'' Apr. 2024. [Online].
+  Available: \url{http://arxiv.org/abs/2404.16743}
+
+\bibitem{b42} X. Liu, D. Liang, S. Yan, D. Chen, Y. Qiao, and J. Yan,
+  ``FOTS: Fast oriented text spotting with a unified network,'' Jan. 2018.
+  [Online]. Available: \url{http://arxiv.org/abs/1801.01671}
+
+\bibitem{b43} M. Liao, P. Lyu, M. He, C. Yao, W. Wu, and X. Bai,
+  ``Mask TextSpotter: An end-to-end trainable neural network for spotting text
+  with arbitrary shapes,'' Aug. 2019. [Online]. Available:
+  \url{http://arxiv.org/abs/1908.08207}
+
+\bibitem{b44} W. Wang et al., ``AE TextSpotter: Learning visual and linguistic
+  representation for ambiguous text spotting,'' Jul. 2021. [Online]. Available:
+  \url{http://arxiv.org/abs/2008.00714}
+
+\bibitem{b45} Y. Liu et al., ``ABCNet v2: Adaptive Bezier-curve network for
+  real-time end-to-end text spotting,'' Jul. 2021. [Online]. Available:
+  \url{http://arxiv.org/abs/2105.03620}
+
+\bibitem{b46} M. Huang et al., ``SwinTextSpotter: Scene text spotting via better
+  synergy between text detection and text recognition,'' unpublished.
+
+\bibitem{b47} M. Ye, J. Zhang, S. Zhao, J. Liu, T. Liu, B. Du, and D. Tao, ``DeepSolo: Let Transformer Decoder with Explicit Points Solo for Text Spotting,'' in \textit{Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR)}, pp. 19348--19357, 2023.
+
+\bibitem{b48} M. Huang, J. Zhang, D. Peng, H. Lu, C. Huang, Y. Liu, X. Bai, and L. Jin, ``ESTextSpotter: Towards Better Scene Text Spotting with Explicit Synergy in Transformer,'' arXiv:2308.10147, 2023.
+
+\bibitem{b49} M. Bu\v{s}ta, Y. Patel, and J. Matas, ``E2E-MLT: An unconstrained
+  end-to-end method for multi-language scene text,'' unpublished.
+
+\bibitem{b50} R. Yan et al., ``TH-DL-v1,''
+  \textit{Robust Reading Competition -- MLT-19}, Accessed: Dec.~05, 2025.
+  [Online]. Available:
+  \url{https://rrc.cvc.uab.es/?ch=15&com=evaluation&view=method_info&task=4&m=57629}
+
+\bibitem{b51} Y. Baek, B. Lee, D. Han, S. Yun, and H. Lee, ``Character region
+  awareness for text detection,'' Apr. 2019. [Online]. Available:
+  \url{http://arxiv.org/abs/1904.01941}
+
+\end{thebibliography}
+
+\begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{Rishik.jpeg}}]{Thota Rishik Sai Santhosh} is currently pursuing the B.Tech. degree in the School of Computer Science and Engineering (SCOPE) at VIT-AP University, Amaravati, India. He is currently a machine learning engineer intern. His main research interests include the design, analysis, and implementation of artificial intelligence algorithms, deep learning, computer vision, and large language models. He has also contributed to research on deep learning-driven applications for medical imaging, including work published in the Digital Health Journal.
+\end{IEEEbiography}
+
+\vspace{10pt}
+
+\begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{abhineet.png}}]{Abhineet Saha}
+is currently pursuing the B.Tech. degree in the School of Computer Science and Engineering (SCOPE) at VIT-AP University, Amaravati, Andhra Pradesh, India. His research interests include real-time object detection using deep learning, Pattern recognition, computer vision, backend development, etc.
+\end{IEEEbiography}
+\vspace{10pt}
+
+\begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25 in,clip,keepaspectratio]{Dr. Tauseef.png}}]{Dr. Tauseef Khan}
+received the Ph.D.  degree in Computer Science and Engineering from Aliah University, Kolkata, in 2022. He completed a Master of Technology (Gold) in Information Technology from Maulana Abul Kalam Azad University of Technology (MAKAUT, formerly WBUT) in 2013. He is currently working as an Assistant Professor (senior grade 2) in the School of Computer Science and Engineering, VIT-AP University, Amaravati, Andhra Pradesh. His research interests include computer vision, digital image processing, machine learning, pattern recognition, etc. He has published several articles in reputed journals and conferences on scene text detection, object detection, image classification, script identification, medical imaging, etc. He is a life member of ISTE.
+\end{IEEEbiography}
+\vspace{10pt}
+
+\begin{IEEEbiography}
+[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{afzal Hussain.png}}]{Dr. Afzal Hussain Shahid}
+received the B.Tech. degree in computer science and engineering from Netaji Subhash Engineering College, Kolkata, India, in 2010, and the M.Tech. and Ph.D. degrees in computer science and engineering from the
+National Institute of Technology Patna, India, in 2013 and 2020, respectively. He is currently an Assistant Professor with the School of Computer Science and Engineering (SCOPE), VIT-AP University, Amaravati, Andhra Pradesh, India. His research interests include artificial intelligence, machine learning, deep learning, soft computing, and evolutionary algorithms.
+\end{IEEEbiography}
+
+\end{document}

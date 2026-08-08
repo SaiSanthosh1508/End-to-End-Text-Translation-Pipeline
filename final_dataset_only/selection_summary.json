@@ -1,0 +1,50 @@
+{
+  "target_size": 100,
+  "selected_rows": 100,
+  "selection_policy": {
+    "ranking_metric": "normalized_chrf",
+    "language_bucketing": "Use MLT class_name directly and merge ReCTS into Chinese.",
+    "allocation_rule": "Explicit user-provided language quotas."
+  },
+  "language_counts": {
+    "Arabic": {
+      "available": 120,
+      "selected": 14,
+      "selected_average_normalized_chrf": 0.9501
+    },
+    "Bangla": {
+      "available": 120,
+      "selected": 14,
+      "selected_average_normalized_chrf": 0.7947
+    },
+    "Chinese": {
+      "available": 120,
+      "selected": 16,
+      "selected_average_normalized_chrf": 0.9719
+    },
+    "Hindi": {
+      "available": 120,
+      "selected": 14,
+      "selected_average_normalized_chrf": 0.996
+    },
+    "Japanese": {
+      "available": 120,
+      "selected": 14,
+      "selected_average_normalized_chrf": 0.928
+    },
+    "Korean": {
+      "available": 120,
+      "selected": 14,
+      "selected_average_normalized_chrf": 0.9721
+    },
+    "Latin": {
+      "available": 120,
+      "selected": 14,
+      "selected_average_normalized_chrf": 1.0
+    }
+  },
+  "source_dataset_counts": {
+    "ICDAR MLT-2019": 100
+  },
+  "average_normalized_chrf": 0.9452
+}
