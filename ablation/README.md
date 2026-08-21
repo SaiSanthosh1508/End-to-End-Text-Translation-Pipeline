@@ -1,0 +1,130 @@
+# Ablation probe: does the channel-attention bottleneck matter?
+
+Reviewer 2 asked for Table 8 to be rerun across at least three seeds. Before spending
+that budget, this probe answers a prior question: **the MS-CBAM channel attention in
+every run so far was misconstructed, and it is worth knowing whether that is why the
+ablation shows nothing.**
+
+## The defect
+
+`MultiScaleCBAM` is registered in both `base_modules` and `repeat_modules` inside
+Ultralytics' `parse_model`, so its YAML args are rewritten twice:
+
+```
+yaml:            [-1, 1, MultiScaleCBAM, [1024, 16]]
+base_modules:    args = [c1, c2, *args[1:]]   ->  [512, 512, 16]
+repeat_modules:  args.insert(2, n)            ->  [512, 512, 1, 16]
+constructor:     MultiScaleCBAM(c1=512, r=512, *(1, 16))
+```
+
+The signature is `(self, c1, r=16, *args, **kwargs)`, so `r` binds to the scaled channel
+count and the literal `16` is swallowed by `*args`. `SimpleChannelAttention(512, r=512)`
+then builds `Conv2d(512, 1, 1)` — a **one-channel** bottleneck. The same happens at all
+four sites (layers 12, 19, 23, 27) of the trained model.
+
+The consequence is that channel attention collapses the whole descriptor to a single
+scalar and re-expands it, so the gate vector is rank-1: it can apply a global gain but
+cannot weight channels selectively, which is the entire point of the module. The
+`ReLU` on that scalar also pins the gate to a constant whenever it goes negative.
+
+The multi-scale *spatial* branch is unaffected — it takes no channel arguments.
+
+`trace_args.py` in the scratchpad reproduces the arithmetic without torch;
+`verify_install.py` asserts it against real constructed models.
+
+## The probe
+
+Two arms, three seeds each, six runs, ~28 GPU-hours on two T4s.
+
+| arm | config | channel bottleneck |
+| --- | --- | --- |
+| `legacy` | `configs/full_legacy.yaml` | 1 channel — reproduces `best.pt` exactly |
+| `fixed` | `configs/full_fixed.yaml` | `c // 16` — the module as documented |
+
+The two configs are byte-identical apart from the CBAM class name, so the comparison
+isolates the bottleneck width and nothing else.
+
+## Running it
+
+```bash
+python ablation/install_modules.py       # patch the installed ultralytics
+python ablation/verify_install.py        # assert both arms built as intended
+python ablation/run_probe.py --data dataset.yaml --project runs/probe
+python ablation/aggregate.py runs/probe
+```
+
+`install_modules.py` targets a clean Ultralytics install and refuses a hand-modified
+copy, including the vendored tree under `Text_Translation_Pipeline/`, which serves the
+Hugging Face Space and is not a training environment. It is idempotent; `--check`
+reports what would change without writing.
+
+**Do not skip `verify_install.py`.** If the patch fails silently, the fixed arm rebuilds
+the one-channel bottleneck and the probe compares a network against itself.
+
+`run_probe.py` skips any run whose `results.csv` already exists, so an interrupted
+Kaggle session resumes by re-running the same command.
+
+## Surviving a failed run
+
+Kaggle saves a batch version's output **only when the notebook finishes**. Left
+unguarded, a crash in the second run discards the first run as well — 4.6 hours gone.
+Three layers guard against that, in order of how much they buy:
+
+1. **Failures are contained.** `run_probe.py` catches a failing run, reports it, and
+   carries on. The version still completes, so every finished run is saved. Re-running
+   the same command retries only what failed. The notebook deliberately omits
+   `check=True` for the same reason.
+2. **Snapshots are cheap.** `--snapshot DIR` mirrors `results.csv` and `args.yaml` after
+   every run. That is a few kilobytes, against ~20 MB of weights, and it is all
+   `aggregate.py` needs.
+3. **Optional off-box copy.** `push_snapshot.py` publishes the snapshot to a Kaggle
+   Dataset after each run, which is the only layer that survives a session killed by
+   timeout or OOM rather than by an exception. Set `PERSIST_TO_DATASET = True` in the
+   notebook and add `KAGGLE_USERNAME` / `KAGGLE_KEY` as notebook secrets. It no-ops
+   quietly when the credentials are absent.
+
+Working interactively instead of *Save & Run All*? Nothing in `/kaggle/working`
+persists unless you press **Save Version** before the session ends.
+
+## Reading the result
+
+`aggregate.py` averages each run over its final 5 epochs rather than reading the last
+row. Within the existing MLT run, mAP50 moves 0.0027 and precision 0.022 across epochs
+80–100 — the same order as the entire spread of Table 8 — so the last-row convention
+was measuring a checkpoint lottery. State the window in the table caption.
+
+The decision rule is whether any metric moves by at least one pooled standard
+deviation:
+
+- **It moves** → the fix is real. Run the full six-configuration ablation on the fixed
+  modules, and accept the downstream cost: `best.pt` is retrained, ReCTS is rerun, and
+  Tables 6, 7 and 9 plus the abstract are updated. The architectural claim may survive.
+- **It does not move** → run the six-configuration ablation on the as-deployed modules,
+  report the null result the reviewer expects, and disclose the displaced reduction
+  ratio as a limitation rather than leaving it for a reader to find.
+
+Either way the defect gets disclosed. Publishing a null result for a module you know
+was misconstructed is not a defensible null result.
+
+## Files
+
+| file | role |
+| --- | --- |
+| `custom_modules.py` | attention modules, both CBAM variants |
+| `install_modules.py` | registers them in the installed Ultralytics |
+| `test_install_modules.py` | checks on the site-packages source surgery |
+| `verify_install.py` | asserts the constructed bottleneck widths |
+| `configs/full_legacy.yaml` | as-deployed arm |
+| `configs/full_fixed.yaml` | corrected arm |
+| `run_probe.py` | six training runs, failure-contained |
+| `push_snapshot.py` | optional off-box copy to a Kaggle Dataset |
+| `aggregate.py` | mean ± SD, decision rule, LaTeX table |
+| `build_notebook.py` | regenerates `probe_kaggle.ipynb` |
+| `probe_kaggle.ipynb` | upload this to Kaggle |
+| `trace_args.py` | reproduces the defect without torch |
+
+`StandardCBAM` in `custom_modules.py` is unused by the probe. It exists for the
+six-configuration ablation that follows: it shares `SimpleChannelAttention` with
+`MSCBAMFixed` and differs only in the spatial kernel, so the "Std CBAM vs MS-CBAM" row
+isolates the multi-scale claim. Ultralytics' own `CBAM` cannot serve that role — it is
+absent from `parse_model`'s module sets and its channel branch has no bottleneck.
