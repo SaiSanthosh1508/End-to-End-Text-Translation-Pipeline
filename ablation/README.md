@@ -119,6 +119,21 @@ deviation:
 Either way the defect gets disclosed. Publishing a null result for a module you know
 was misconstructed is not a defensible null result.
 
+## Regenerating Table 5
+
+Table 5 disagrees with Fig. 11(b) on every class by +1.6 to +15.7 mAP50 points, all in
+one direction, and its implied overall mAP50 is 73.8 against 66.3 in the figure legend
+and 66.1 in `results.csv`. Precision reconciles (80.3 vs 81.0) while recall and mAP do
+not, so those two columns did not come from the same evaluation as the rest of the paper.
+
+`revalidate_kaggle.ipynb` re-runs validation from `best.pt` and prints a replacement
+table plus ready-to-paste LaTeX. Inference only, about two minutes. If the overall mAP50
+returns near 0.663 the checkpoint is the one behind the figure; if not, `best.pt` is a
+different run and the table must be rebuilt from whichever checkpoint produced it.
+
+It reads `best.pt` from the attached dataset rather than the clone, because the repo
+keeps it in git-lfs and a plain clone yields a pointer file. The script checks for that.
+
 ## Files
 
 | file | role |
@@ -135,6 +150,8 @@ was misconstructed is not a defensible null result.
 | `build_notebook.py` | regenerates `probe_kaggle.ipynb` |
 | `probe_kaggle.ipynb` | upload this to Kaggle |
 | `trace_args.py` | reproduces the defect without torch |
+| `revalidate.py` | regenerates the class-wise MLT table from `best.pt` |
+| `build_revalidate.py` / `revalidate_kaggle.ipynb` | run that on Kaggle |
 
 `StandardCBAM` in `custom_modules.py` is unused by the probe. It exists for the
 six-configuration ablation that follows: it shares `SimpleChannelAttention` with
