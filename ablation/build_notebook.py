@@ -62,18 +62,53 @@ DATASET_SLUG = "your-kaggle-username/mscbam-probe-results"''',
     ),
     (
         "code",
-        f'''import subprocess, pathlib
+        f'''import pathlib, subprocess
 
-if not pathlib.Path("/kaggle/working/mlt19_yolo_obb_final.zip").exists():
-    subprocess.run(["gdown", "{MLT_YOLO_DRIVE_ID}", "-O",
-                    "/kaggle/working/mlt19_yolo_obb_final.zip"], check=True)
-    subprocess.run(["unzip", "-q", "-o", "/kaggle/working/mlt19_yolo_obb_final.zip",
-                    "-d", "/kaggle/working"], check=True)
+def find_root(*bases):
+    """A YOLO root is a directory holding both images/train and labels/train."""
+    found = []
+    for base in bases:
+        for hit in pathlib.Path(base).glob("**/images/train"):
+            candidate = hit.parent.parent
+            if (candidate / "labels/train").is_dir():
+                found.append(candidate)
+    return found
 
-roots = [p.parent for p in pathlib.Path("/kaggle/working").glob("*/images/train")]
+# An attached Kaggle dataset is preferred: it needs no download and cannot rot the
+# way a Drive link can. Falls back to gdown only if nothing suitable is attached.
+roots = find_root("/kaggle/input")
+if roots:
+    print("using attached dataset")
+else:
+    print("no attached dataset found; falling back to gdown")
+    if not pathlib.Path("/kaggle/working/mlt19_yolo_obb_final.zip").exists():
+        subprocess.run(["gdown", "{MLT_YOLO_DRIVE_ID}", "-O",
+                        "/kaggle/working/mlt19_yolo_obb_final.zip"], check=True)
+        subprocess.run(["unzip", "-q", "-o", "/kaggle/working/mlt19_yolo_obb_final.zip",
+                        "-d", "/kaggle/working"], check=True)
+    roots = find_root("/kaggle/working")
+
 if len(roots) != 1:
-    raise RuntimeError(f"expected one dataset root with images/train, found {{roots}}")
+    raise RuntimeError(
+        f"need exactly one images/train + labels/train root, found {{roots}}. "
+        "Attach the MLT YOLO dataset to this notebook."
+    )
 root = roots[0]
+
+counts = {{split: (len(list((root / f"images/{{split}}").glob("*"))),
+                  len(list((root / f"labels/{{split}}").glob("*.txt"))))
+          for split in ("train", "val")}}
+for split, (imgs, lbls) in counts.items():
+    print(f"{{split}}: {{imgs}} images, {{lbls}} labels")
+    if imgs == 0 or imgs != lbls:
+        raise RuntimeError(f"{{split}} split is empty or images and labels disagree")
+
+sample = next((root / "labels/train").glob("*.txt"))
+columns = {{len(line.split()) for line in sample.read_text().split(chr(10)) if line.strip()}}
+print("label columns:", sorted(columns), "->",
+      "oriented (class + 4 corners)" if columns == {{9}}
+      else "axis-aligned (class + xywh)" if columns == {{5}}
+      else "MIXED - inspect before training")
 
 pathlib.Path("/kaggle/working/dataset.yaml").write_text(
     f"""train: {{root}}/images/train
@@ -92,9 +127,7 @@ names:
   7: Other
 """
 )
-print("dataset root:", root)
-print(" train imgs:", len(list((root / "images/train").glob("*"))))
-print("   val imgs:", len(list((root / "images/val").glob("*"))))''',
+print("dataset root:", root)''',
     ),
     (
         "code",
