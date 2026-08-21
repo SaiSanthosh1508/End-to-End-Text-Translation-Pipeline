@@ -32,19 +32,21 @@ BOX_W, BOX_H = 132, 46
 # saxutils.escape leaves quotes alone, which would break an attribute value.
 QUOTES = {'"': "&quot;", "'": "&apos;"}
 
-# Stock YOLO operators share one cool blue-grey family so they recede; the two
-# contributed modules take warm accents; merges take a muted sage; the head is the
-# only saturated block. The fills differ in lightness as well as hue, so the figure
-# survives greyscale printing.
+# Steel blues carry the stock YOLO operators, deepening with the stage: plain
+# convolutions lightest, block stacks mid, the pooling stage darkest. Resampling
+# takes a warm neutral and merges a sage, so the two structural operations read
+# apart from the convolutions at a glance. The two contributed modules take gold
+# and plum, and the head is the single dark terminal. Fills are ordered by
+# lightness as well as hue, so the figure holds up printed in greyscale.
 FILL = {
-    "conv": ("#EDF2F7", "#7D97AE", "#1A2733"),
-    "c3k2": ("#D7E4F0", "#5A85AD", "#16222E"),
-    "sppf": ("#B6CDE3", "#3F6D9B", "#121D28"),
-    "up":   ("#E4EBF1", "#8AA2B8", "#1A2733"),
-    "cat":  ("#DEE8DD", "#6D8B72", "#1B2A1E"),
-    "cbam": ("#F6E6C8", "#B08A44", "#3A2A0C"),
-    "attn": ("#E4D8EC", "#7A5B96", "#2A1C38"),
-    "head": ("#2F4E70", "#20374F", "#FFFFFF"),
+    "conv": ("#DCE6F1", "#4A6E96", "#15222F"),
+    "c3k2": ("#BFD3E6", "#35608C", "#101C28"),
+    "sppf": ("#93B2D2", "#26537F", "#0C1622"),
+    "up":   ("#EDE3D4", "#A08A66", "#2B2318"),
+    "cat":  ("#CEDCC4", "#68885A", "#1B2716"),
+    "cbam": ("#F2D9A0", "#AE8327", "#33260A"),
+    "attn": ("#DBC8E4", "#77508F", "#261732"),
+    "head": ("#2C4A6B", "#1C334A", "#FFFFFF"),
 }
 
 NODES: dict[int, tuple[int, int, str, str, str]] = {
@@ -137,9 +139,9 @@ def to_xml(pairs: list[tuple[int, int]]) -> str:
     for name, x, y, w, h, dashed, label in PANELS:
         style = (
             f"rounded=1;arcSize=4;whiteSpace=wrap;html=1;dashed={dashed};"
-            "dashPattern=8 5;fillColor=#FAFBFC;strokeColor=#AAB8C4;strokeWidth=1.1;"
+            "dashPattern=8 5;fillColor=#F7F9FB;strokeColor=#93A5B5;strokeWidth=1.2;"
             "verticalAlign=top;align=left;spacingLeft=12;spacingTop=6;fontSize=11;"
-            "fontFamily=Helvetica;fontStyle=1;fontColor=#8194A5;"
+            "fontFamily=Helvetica;fontStyle=1;fontColor=#5F7488;"
         )
         cells.append(
             f'<mxCell id="{name}" value="{escape(label)}" style="{style}" vertex="1" '
@@ -167,7 +169,7 @@ def to_xml(pairs: list[tuple[int, int]]) -> str:
         if repeat:
             cells.append(
                 f'<mxCell id="r{idx}" value="{repeat}" style="text;html=1;align=center;'
-                'fontSize=8;fontFamily=Helvetica;fontStyle=2;fontColor=#7D8B98;" vertex="1" '
+                'fontSize=8;fontFamily=Helvetica;fontStyle=2;fontColor=#5F7488;" vertex="1" '
                 f'parent="1"><mxGeometry x="{x + BOX_W - 28}" y="{y - 17}" width="28" '
                 'height="16" as="geometry"/></mxCell>'
             )
@@ -177,8 +179,8 @@ def to_xml(pairs: list[tuple[int, int]]) -> str:
         style = (
             "edgeStyle=orthogonalEdgeStyle;rounded=1;arcSize=10;html=1;jettySize=auto;"
             "endArrow=blockThin;endFill=1;endSize=6;"
-            + ("strokeColor=#9FB2C4;strokeWidth=1;"
-               if routed else "strokeColor=#44607A;strokeWidth=1.5;")
+            + ("strokeColor=#6E8399;strokeWidth=1.3;"
+               if routed else "strokeColor=#25384B;strokeWidth=1.7;")
         )
         points = ""
         if routed:
