@@ -75,14 +75,20 @@ names:
 )
 pathlib.Path("/kaggle/working/weights.txt").write_text(str(weights))'''
 
-RUN = '''import subprocess
+RUN = '''import subprocess, torch
+
+# Validation is inference over 1,000 images, so CPU is viable. That matters when the
+# probe already holds a GPU session: a CPU session costs no GPU quota and cannot
+# collide with it.
+device = "0" if torch.cuda.is_available() else "cpu"
+print(f"device: {device}")
 
 weights = open("/kaggle/working/weights.txt").read().strip()
 subprocess.run(
     ["python", "ablation/revalidate.py",
      "--weights", weights,
      "--data", "/kaggle/working/dataset.yaml",
-     "--imgsz", "480", "--device", "0"],
+     "--imgsz", "480", "--device", device],
     cwd="/kaggle/working/repo", check=True,
 )'''
 
