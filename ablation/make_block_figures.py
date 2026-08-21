@@ -183,9 +183,9 @@ def to_xml(f: Figure) -> str:
         cells.append(
             f'<mxCell id="g{gn}" value="{escape(label)}" style="rounded=1;arcSize=6;'
             'whiteSpace=wrap;html=1;dashed=1;dashPattern=6 4;fillColor=none;'
-            'strokeColor=#A2B2C0;strokeWidth=1.1;verticalAlign=bottom;align=center;'
-            'spacingBottom=-20;fontSize=11;fontFamily=Helvetica;fontStyle=2;'
-            f'fontColor=#5F7488;" vertex="1" parent="1"><mxGeometry x="{gx + dx}" '
+            'strokeColor=#8FA3B5;strokeWidth=1.2;verticalAlign=bottom;align=center;'
+            'spacingBottom=-24;fontSize=13;fontFamily=Helvetica;fontStyle=1;'
+            f'fontColor=#3D5468;" vertex="1" parent="1"><mxGeometry x="{gx + dx}" '
             f'y="{gy + dy}" '
             f'width="{gw}" height="{gh}" as="geometry"/></mxCell>'
         )
@@ -218,9 +218,10 @@ def to_xml(f: Figure) -> str:
     for n, (a, b, points, label, sides, routed) in enumerate(f.edges):
         style = (
             "edgeStyle=orthogonalEdgeStyle;rounded=1;arcSize=10;html=1;jettySize=auto;"
-            "endArrow=blockThin;endFill=1;endSize=6;fontSize=10;fontFamily=Helvetica;"
-            "fontColor=#25384B;labelBackgroundColor=#FFFFFF;"
-            + ("strokeColor=#6E8399;strokeWidth=1.3;dashed=1;dashPattern=6 4;"
+            "endArrow=blockThin;endFill=1;endSize=6;fontSize=13;fontFamily=Helvetica;"
+            "fontStyle=1;fontColor=#1F3244;labelBackgroundColor=#FFFFFF;"
+            "verticalLabelPosition=middle;"
+            + ("strokeColor=#5C748C;strokeWidth=1.5;dashed=1;dashPattern=7 4;"
                if routed else "strokeColor=#25384B;strokeWidth=1.7;")
         )
         if sides:
