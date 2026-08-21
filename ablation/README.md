@@ -147,6 +147,24 @@ Point it at a different config to document a different variant:
 python ablation/make_figures.py --config configs/full_rearranged.yaml --out rearranged.pptx
 ```
 
+## Regenerating Figs. 4, 5 and 7
+
+Each depicts something the modules do not do. Fig. 4 omits the ReLU between the squeeze
+and expand convolutions and labels its output `(B,C,1,1)`, which is the weight vector
+rather than the weighted map. Fig. 5 labels the concatenation of the mean and max maps
+`(B,1,W,H)` when two single-channel maps concatenate to `(B,2,W,H)`, and joins the three
+convolution branches with `Concat` when `MultiScaleSpatialAttention.forward` sums them.
+Fig. 7 names a C2PSA query source the config does not contain and an MS-CBAM-refined
+key/value map at `(B,256,15,15)` that is really a plain P4/16 output at `(B,256,30,30)`.
+
+`make_block_figures.py` emits corrected replacements into `figures/`, styled to match
+the architecture diagram. Every connector is tested against every block, so none crosses
+one.
+
+Fig. 4 still draws the bottleneck as `(B,C/r,1,1)`, which is the intended design. In the
+deployed model it is `(B,1,1,1)` because of the displaced reduction ratio; leave that
+until the probe reports, since a fix makes the figure correct as drawn.
+
 ## Regenerating Table 5
 
 Table 5 disagrees with Fig. 11(b) on every class by +1.6 to +15.7 mAP50 points, all in
@@ -178,7 +196,9 @@ keeps it in git-lfs and a plain clone yields a pointer file. The script checks f
 | `build_notebook.py` | regenerates `probe_kaggle.ipynb` |
 | `probe_kaggle.ipynb` | upload this to Kaggle |
 | `trace_args.py` | reproduces the defect without torch |
-| `make_drawio.py` / `architecture.drawio` | publication figure, editable in draw.io |
+| `make_drawio.py` / `architecture.drawio` | Fig. 5 architecture, editable in draw.io |
+| `make_block_figures.py` / `figures/` | Figs. 4, 5 and 7 module diagrams |
+| `drawio_to_pptx.py` | rebuilds any .drawio as editable PowerPoint shapes |
 | `make_figures.py` / `figures_editable.pptx` | per-layer diagram, editable in PowerPoint |
 | `revalidate.py` | regenerates the class-wise MLT table from `best.pt` |
 | `build_revalidate.py` / `revalidate_kaggle.ipynb` | run that on Kaggle |
