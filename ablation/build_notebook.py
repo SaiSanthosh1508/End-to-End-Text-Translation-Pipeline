@@ -14,7 +14,7 @@ from pathlib import Path
 REPO = "https://github.com/SaiSanthosh1508/End-to-End-Text-Translation-Pipeline.git"
 BRANCH = "ablation-mscbam-probe"
 ULTRALYTICS = "8.3.189"
-MLT_YOLO_DRIVE_ID = "1Ena8CH9H8XxY8yBx15KYmQd82lJQE6Um"
+MLT_DATASET = "rishiksaisanthosh/dataset-test"
 
 CELLS: list[tuple[str, str]] = [
     (
@@ -26,6 +26,11 @@ Six runs: the full model with the channel-attention reduction ratio displaced
 
 The next cell clones branch `{BRANCH}`. Once that branch is merged to `main`,
 drop the `--branch` flag.
+
+**Attach the data first.** *Add Input -> Datasets -> `{MLT_DATASET}`*. Every
+Google Drive ID the old notebooks used now returns 404; this Kaggle dataset is
+the only surviving copy of the converted MLT set (9,000 train / 1,000 val, 9-column
+oriented labels).
 
 **Session plan.** Each run is ~4.6 h on T4 x2, so budget two runs per session and
 check your account's GPU session cap first. Edit `THIS_SESSION` below, then
@@ -62,53 +67,52 @@ DATASET_SLUG = "your-kaggle-username/mscbam-probe-results"''',
     ),
     (
         "code",
-        f'''import pathlib, subprocess
+        f'''import pathlib
 
-def find_root(*bases):
-    """A YOLO root is a directory holding both images/train and labels/train."""
-    found = []
-    for base in bases:
-        for hit in pathlib.Path(base).glob("**/images/train"):
-            candidate = hit.parent.parent
-            if (candidate / "labels/train").is_dir():
-                found.append(candidate)
-    return found
-
-# An attached Kaggle dataset is preferred: it needs no download and cannot rot the
-# way a Drive link can. Falls back to gdown only if nothing suitable is attached.
-roots = find_root("/kaggle/input")
-if roots:
-    print("using attached dataset")
-else:
-    print("no attached dataset found; falling back to gdown")
-    if not pathlib.Path("/kaggle/working/mlt19_yolo_obb_final.zip").exists():
-        subprocess.run(["gdown", "{MLT_YOLO_DRIVE_ID}", "-O",
-                        "/kaggle/working/mlt19_yolo_obb_final.zip"], check=True)
-        subprocess.run(["unzip", "-q", "-o", "/kaggle/working/mlt19_yolo_obb_final.zip",
-                        "-d", "/kaggle/working"], check=True)
-    roots = find_root("/kaggle/working")
-
-if len(roots) != 1:
-    raise RuntimeError(
-        f"need exactly one images/train + labels/train root, found {{roots}}. "
-        "Attach the MLT YOLO dataset to this notebook."
+def find_roots(base):
+    """A YOLO root holds both images/train and labels/train."""
+    return sorted(
+        {{hit.parent.parent for hit in pathlib.Path(base).glob("**/images/train")
+          if (hit.parent.parent / "labels/train").is_dir()}}
     )
-root = roots[0]
 
-counts = {{split: (len(list((root / f"images/{{split}}").glob("*"))),
-                  len(list((root / f"labels/{{split}}").glob("*.txt"))))
-          for split in ("train", "val")}}
-for split, (imgs, lbls) in counts.items():
+roots = find_roots("/kaggle/input")
+if not roots:
+    raise RuntimeError(
+        "No YOLO dataset attached. Add Input -> Datasets -> {MLT_DATASET}. "
+        "The Drive link the old notebooks used returns 404."
+    )
+
+# dataset-test carries the same tree twice; they are identical, so take the larger
+# and break ties on the shorter path. The choice is printed for the record.
+def size(root):
+    return len(list((root / "images/train").glob("*")))
+
+root = max(roots, key=lambda r: (size(r), -len(str(r))))
+if len(roots) > 1:
+    print(f"{{len(roots)}} roots attached, using {{root}}")
+
+counts = {{}}
+for split in ("train", "val"):
+    imgs = len(list((root / f"images/{{split}}").glob("*")))
+    lbls = len(list((root / f"labels/{{split}}").glob("*.txt")))
+    counts[split] = imgs
     print(f"{{split}}: {{imgs}} images, {{lbls}} labels")
     if imgs == 0 or imgs != lbls:
         raise RuntimeError(f"{{split}} split is empty or images and labels disagree")
 
+total = sum(counts.values())
+print(f"split: {{counts['train']}}/{{total}} train "
+      f"({{100 * counts['train'] / total:.0f}}/{{100 * counts['val'] / total:.0f}})")
+
 sample = next((root / "labels/train").glob("*.txt"))
-columns = {{len(line.split()) for line in sample.read_text().split(chr(10)) if line.strip()}}
-print("label columns:", sorted(columns), "->",
-      "oriented (class + 4 corners)" if columns == {{9}}
-      else "axis-aligned (class + xywh)" if columns == {{5}}
+cols = {{len(line.split()) for line in sample.read_text().splitlines() if line.strip()}}
+print("label columns:", sorted(cols), "->",
+      "oriented (class + 4 corners)" if cols == {{9}}
+      else "axis-aligned (class + xywh)" if cols == {{5}}
       else "MIXED - inspect before training")
+if cols != {{9}}:
+    raise RuntimeError("expected 9-column oriented labels for an OBB run")
 
 pathlib.Path("/kaggle/working/dataset.yaml").write_text(
     f"""train: {{root}}/images/train

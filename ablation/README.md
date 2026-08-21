@@ -44,6 +44,19 @@ Two arms, three seeds each, six runs, ~28 GPU-hours on two T4s.
 The two configs are byte-identical apart from the CBAM class name, so the comparison
 isolates the bottleneck width and nothing else.
 
+## Data
+
+Attach `rishiksaisanthosh/dataset-test` to the notebook. Every Google Drive ID the
+original notebooks used now returns 404, and that Kaggle dataset is the only surviving
+copy of the converted MLT set: 9,000 train / 1,000 val, 9-column oriented labels. It
+carries the tree twice under different prefixes; the notebook picks one and prints
+which.
+
+Two things worth recording in the manuscript. The split is 90/10, not the 80/20 stated
+in Section III-A. And `notebooks/Final_and_correct_mlt_preprocess.ipynb` emits 5-column
+axis-aligned boxes, so as published it does not regenerate this dataset — the released
+converter and the data actually trained on disagree.
+
 ## Running it
 
 ```bash
