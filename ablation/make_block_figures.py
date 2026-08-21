@@ -53,6 +53,7 @@ class Figure:
         self.width, self.height = width, height
         self.nodes: dict[str, tuple[int, int, int, str, str, bool]] = {}
         self.edges: list[tuple[str, str, list[tuple[int, int]], str, str, bool]] = []
+        self.groups: list[tuple[int, int, int, int, str]] = []
 
     def box(self, ident: str, x: int, y: int, w: int, caption: str, kind: str) -> None:
         self.nodes[ident] = (x, y, w, caption, kind, False)
@@ -63,6 +64,32 @@ class Figure:
     def link(self, a: str, b: str, points: list[tuple[int, int]] | None = None,
              label: str = "", sides: str = "", dashed: bool = False) -> None:
         self.edges.append((a, b, points or [], label, sides, dashed))
+
+    def group(self, members: list[str], label: str, pad: int = 16) -> None:
+        """A dashed sub-frame around related blocks, as the published Fig. 4 uses."""
+        boxes = [self.geometry(m) for m in members]
+        x = min(b[0] for b in boxes) - pad
+        y = min(b[1] for b in boxes) - pad
+        w = max(b[0] + b[2] for b in boxes) + pad - x
+        h = max(b[1] + b[3] for b in boxes) + pad - y
+        self.groups.append((x, y, w, h, label))
+
+    def bounds(self, pad: int = 26, title_room: int = 34) -> tuple[int, int, int, int]:
+        """The outer frame, enclosing every block, waypoint and sub-frame drawn."""
+        xs: list[float] = []
+        ys: list[float] = []
+        for ident in self.nodes:
+            x, y, w, h = self.geometry(ident)
+            xs += [x, x + w]
+            ys += [y, y + h]
+        for _, _, points, *_ in self.edges:
+            xs += [p[0] for p in points]
+            ys += [p[1] for p in points]
+        for gx, gy, gw, gh, _ in self.groups:
+            xs += [gx, gx + gw]
+            ys += [gy, gy + gh]
+        left, top = min(xs) - pad, min(ys) - pad - title_room
+        return int(left), int(top), int(max(xs) + pad - left), int(max(ys) + pad - top)
 
     def geometry(self, ident: str) -> tuple[int, int, int, int]:
         x, y, w, _, _, round_ = self.nodes[ident]
@@ -88,6 +115,7 @@ def channel_attention() -> Figure:
                  ("ex", "sig"), ("sig", "mul"), ("mul", "out")):
         f.link(a, b)
     f.link("in", "mul", [(99, 262), (1126, 262)], "identity", "b,b", dashed=True)
+    f.group(["sq", "relu", "ex"], "Bottleneck")
     return f
 
 
@@ -140,10 +168,31 @@ def cross_attention() -> Figure:
 
 def to_xml(f: Figure) -> str:
     cells: list[str] = []
+    raw_x, raw_y, fw, fh = f.bounds()
+    # Padding can push the frame past the origin; shift everything so the page
+    # starts at a positive corner rather than relying on draw.io's negative canvas.
+    dx, dy = 20 - raw_x, 20 - raw_y
+    fx, fy = 20, 20
+    cells.append(
+        f'<mxCell id="frame" style="rounded=1;arcSize=3;whiteSpace=wrap;html=1;'
+        'fillColor=#FDFDFE;strokeColor=#7E93A6;strokeWidth=1.4;" vertex="1" '
+        f'parent="1"><mxGeometry x="{fx}" y="{fy}" width="{fw}" height="{fh}" '
+        'as="geometry"/></mxCell>'
+    )
+    for gn, (gx, gy, gw, gh, label) in enumerate(f.groups):
+        cells.append(
+            f'<mxCell id="g{gn}" value="{escape(label)}" style="rounded=1;arcSize=6;'
+            'whiteSpace=wrap;html=1;dashed=1;dashPattern=6 4;fillColor=none;'
+            'strokeColor=#A2B2C0;strokeWidth=1.1;verticalAlign=bottom;align=center;'
+            'spacingBottom=-20;fontSize=11;fontFamily=Helvetica;fontStyle=2;'
+            f'fontColor=#5F7488;" vertex="1" parent="1"><mxGeometry x="{gx + dx}" '
+            f'y="{gy + dy}" '
+            f'width="{gw}" height="{gh}" as="geometry"/></mxCell>'
+        )
     cells.append(
         f'<mxCell id="title" value="{escape(f.title)}" style="text;html=1;align=left;'
         'verticalAlign=middle;fontSize=15;fontFamily=Helvetica;fontStyle=1;'
-        f'fontColor=#25384B;" vertex="1" parent="1"><mxGeometry x="25" y="22" '
+        f'fontColor=#25384B;" vertex="1" parent="1"><mxGeometry x="{fx + 20}" y="{fy + 12}" '
         f'width="600" height="26" as="geometry"/></mxCell>'
     )
 
@@ -162,8 +211,8 @@ def to_xml(f: Figure) -> str:
         _, _, _, h = f.geometry(ident)
         cells.append(
             f'<mxCell id="{ident}" value="{escape(label, QUOTES)}" style="{style}" '
-            f'vertex="1" parent="1"><mxGeometry x="{x}" y="{y}" width="{w}" '
-            f'height="{h}" as="geometry"/></mxCell>'
+            f'vertex="1" parent="1"><mxGeometry x="{x + dx}" y="{y + dy}" '
+            f'width="{w}" height="{h}" as="geometry"/></mxCell>'
         )
 
     for n, (a, b, points, label, sides, routed) in enumerate(f.edges):
@@ -182,7 +231,9 @@ def to_xml(f: Figure) -> str:
                       f"entryX={ix};entryY={iy};entryDx=0;entryDy=0;")
         array = ""
         if points:
-            inner = "".join(f'<mxPoint x="{px}" y="{py}"/>' for px, py in points)
+            inner = "".join(
+                f'<mxPoint x="{px + dx}" y="{py + dy}"/>' for px, py in points
+            )
             array = f'<Array as="points">{inner}</Array>'
         cells.append(
             f'<mxCell id="e{n}" value="{escape(label)}" style="{style}" edge="1" '
@@ -194,7 +245,7 @@ def to_xml(f: Figure) -> str:
     return (
         f'<mxGraphModel dx="1400" dy="800" grid="0" gridSize="10" guides="1" '
         f'tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" '
-        f'pageWidth="{f.width}" pageHeight="{f.height}" math="0" shadow="0" '
+        f'pageWidth="{fw + 40}" pageHeight="{fh + 40}" math="0" shadow="0" '
         f'adaptiveColors="0" background="#FFFFFF">'
         f'<root><mxCell id="0"/><mxCell id="1" parent="0"/>{body}</root>'
         "</mxGraphModel>"
