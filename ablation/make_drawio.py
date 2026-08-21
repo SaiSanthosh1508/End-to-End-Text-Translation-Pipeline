@@ -39,46 +39,46 @@ QUOTES = {'"': "&quot;", "'": "&apos;"}
 # and plum, and the head is the single dark terminal. Fills are ordered by
 # lightness as well as hue, so the figure holds up printed in greyscale.
 FILL = {
-    "conv": ("#DCE6F1", "#4A6E96", "#15222F"),
-    "c3k2": ("#BFD3E6", "#35608C", "#101C28"),
-    "sppf": ("#93B2D2", "#26537F", "#0C1622"),
-    "up":   ("#EDE3D4", "#A08A66", "#2B2318"),
-    "cat":  ("#CEDCC4", "#68885A", "#1B2716"),
-    "cbam": ("#F2D9A0", "#AE8327", "#33260A"),
-    "attn": ("#DBC8E4", "#77508F", "#261732"),
-    "head": ("#2C4A6B", "#1C334A", "#FFFFFF"),
+    "conv": ("#E1EDF8", "#3D6B99", "#12202D"),
+    "c3k2": ("#BFD8EE", "#2C5F8F", "#0E1C27"),
+    "sppf": ("#8DB6DC", "#1E4E7A", "#08131F"),
+    "up":   ("#F5E6CC", "#B08B4A", "#2E2410"),
+    "cat":  ("#D2E4C6", "#5C8749", "#182513"),
+    "cbam": ("#F8D79A", "#C0891C", "#332508"),
+    "attn": ("#E0CBEE", "#6C4A94", "#22142E"),
+    "head": ("#23445F", "#142C3E", "#FFFFFF"),
 }
 
 NODES: dict[int, tuple[int, int, str, str, str]] = {
-    0:  (55,   165, "Conv\n(c=64,3x3,k=2)", "conv", ""),
-    1:  (200,  165, "Conv\n(c=128,3x3,k=2)", "conv", ""),
-    2:  (345,  165, "C3k2\n(c=256, scale=0.25)", "c3k2", "x2"),
-    3:  (490,  165, "Conv\n(c=256,3x3,k=2)", "conv", ""),
-    4:  (490,  268, "C3k2\n(c=512, scale=0.25)", "c3k2", "x2"),
-    5:  (345,  268, "Conv\n(c=512,3x3,k=2)", "conv", ""),
-    6:  (200,  268, "C3k2\n(c=512, shortcut)", "c3k2", "x2"),
-    7:  (55,   268, "Conv\n(c=1024,3x3,k=2)", "conv", ""),
-    8:  (55,   371, "C3k2\n(c=1024, shortcut)", "c3k2", "x2"),
-    9:  (200,  371, "SPPF\n(c=1024, k=5)", "sppf", ""),
-    10: (345,  371, "Conv\n(c=1024, 1x1)", "conv", ""),
-    11: (490,  371, "Cross-Attention\n(h=8, c=1024)", "attn", ""),
-    12: (635,  371, "MS-CBAM\n(c=1024, r=16)", "cbam", ""),
+    0:  (55,   165, "Conv\n64, 3x3, s2", "conv", ""),
+    1:  (200,  165, "Conv\n128, 3x3, s2", "conv", ""),
+    2:  (345,  165, "C3k2\n256, e0.25", "c3k2", "x2"),
+    3:  (490,  165, "Conv\n256, 3x3, s2", "conv", ""),
+    4:  (490,  268, "C3k2\n512, e0.25", "c3k2", "x2"),
+    5:  (345,  268, "Conv\n512, 3x3, s2", "conv", ""),
+    6:  (200,  268, "C3k2\n512, shortcut", "c3k2", "x2"),
+    7:  (55,   268, "Conv\n1024, 3x3, s2", "conv", ""),
+    8:  (55,   371, "C3k2\n1024, shortcut", "c3k2", "x2"),
+    9:  (200,  371, "SPPF\n1024, k=5", "sppf", ""),
+    10: (345,  371, "Conv\n1024, 1x1", "conv", ""),
+    11: (490,  371, "Cross-Attention\n1024, h=8", "attn", ""),
+    12: (635,  371, "MS-CBAM\n1024, r=16", "cbam", ""),
     13: (635,  474, "UpSample", "up", ""),
     14: (345,  474, "Concat", "cat", ""),
-    15: (905,  560, "C3k2\n(c=512, shortcut)", "c3k2", "x2"),
+    15: (905,  560, "C3k2\n512, shortcut", "c3k2", "x2"),
     16: (905,  474, "UpSample", "up", ""),
     17: (905,  388, "Concat", "cat", ""),
-    18: (905,  302, "C3k2\n(c=256, scale=0.25)", "c3k2", "x2"),
-    19: (905,  216, "MS-CBAM\n(c=256, r=16)", "cbam", ""),
-    20: (905,  130, "Conv\n(c=256,3x3,k=2)", "conv", ""),
+    18: (905,  302, "C3k2\n256, e0.25", "c3k2", "x2"),
+    19: (905,  216, "MS-CBAM\n256, r=16", "cbam", ""),
+    20: (905,  130, "Conv\n256, 3x3, s2", "conv", ""),
     21: (1155, 130, "Concat", "cat", ""),
-    22: (1155, 202, "C3k2\n(c=512, shortcut)", "c3k2", "x2"),
-    23: (1155, 274, "MS-CBAM\n(c=512, r=16)", "cbam", ""),
-    24: (1155, 346, "Conv\n(c=512,3x3,k=2)", "conv", ""),
+    22: (1155, 202, "C3k2\n512, shortcut", "c3k2", "x2"),
+    23: (1155, 274, "MS-CBAM\n512, r=16", "cbam", ""),
+    24: (1155, 346, "Conv\n512, 3x3, s2", "conv", ""),
     25: (1155, 418, "Concat", "cat", ""),
-    26: (1155, 490, "C3k2\n(c=1024, shortcut)", "c3k2", "x2"),
-    27: (1155, 562, "MS-CBAM\n(c=1024, r=16)", "cbam", ""),
-    28: (1155, 634, "OBB Detect\n(nc=8)", "head", ""),
+    26: (1155, 490, "C3k2\n1024, shortcut", "c3k2", "x2"),
+    27: (1155, 562, "MS-CBAM\n1024, r=16", "cbam", ""),
+    28: (1155, 634, "OBB Detect\n8 classes", "head", ""),
 }
 
 PANELS = [
@@ -140,7 +140,7 @@ def to_xml(pairs: list[tuple[int, int]]) -> str:
         style = (
             f"rounded=1;arcSize=4;whiteSpace=wrap;html=1;dashed={dashed};"
             "dashPattern=8 5;fillColor=#F7F9FB;strokeColor=#93A5B5;strokeWidth=1.2;"
-            "verticalAlign=top;align=left;spacingLeft=12;spacingTop=6;fontSize=11;"
+            "verticalAlign=top;align=left;spacingLeft=12;spacingTop=6;fontSize=13;"
             "fontFamily=Helvetica;fontStyle=1;fontColor=#5F7488;"
         )
         cells.append(
@@ -152,14 +152,14 @@ def to_xml(pairs: list[tuple[int, int]]) -> str:
     for idx, (x, y, caption, kind, repeat) in NODES.items():
         fill, stroke, font = FILL[kind]
         style = (
-            "rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=10;"
-            "fontFamily=Helvetica;verticalAlign=middle;"
+            "rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=12;"
+            "fontFamily=Helvetica;fontStyle=1;verticalAlign=middle;"
             f"fillColor={fill};strokeColor={stroke};fontColor={font};strokeWidth=1.1;"
         )
         name, _, params = caption.partition("\n")
         label = f"<b>{escape(name)}</b>"
         if params:
-            label += f"<br><font style='font-size:8px'>{escape(params)}</font>"
+            label += f"<br><b style='font-size:10px'>{escape(params)}</b>"
         cells.append(
             f'<mxCell id="n{idx}" value="{escape(label, QUOTES)}" style="{style}" '
             f'vertex="1" '
@@ -169,7 +169,7 @@ def to_xml(pairs: list[tuple[int, int]]) -> str:
         if repeat:
             cells.append(
                 f'<mxCell id="r{idx}" value="{repeat}" style="text;html=1;align=center;'
-                'fontSize=8;fontFamily=Helvetica;fontStyle=2;fontColor=#5F7488;" vertex="1" '
+                'fontSize=10;fontFamily=Helvetica;fontStyle=3;fontColor=#4E6478;" vertex="1" '
                 f'parent="1"><mxGeometry x="{x + BOX_W - 28}" y="{y - 17}" width="28" '
                 'height="16" as="geometry"/></mxCell>'
             )
