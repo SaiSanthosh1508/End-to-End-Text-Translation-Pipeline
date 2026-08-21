@@ -119,6 +119,26 @@ deviation:
 Either way the defect gets disclosed. Publishing a null result for a module you know
 was misconstructed is not a defensible null result.
 
+## Regenerating Figs. 5 and 7
+
+Both figures draw an architecture that was never trained. Fig. 5 shows a C2PSA block
+between SPPF and the Cross-Attention block, and an MS-CBAM inside the backbone; the
+trained config has a plain `Conv [1024,1,1]` in place of C2PSA and no backbone MS-CBAM.
+Fig. 7 labels the query as the C2PSA output at `(B,1024,15,15)` and the key/value as an
+MS-CBAM-refined map at `(B,256,15,15)`; they are really the P5/32 output at
+`(B,512,15,15)` and a plain P4/16 map at `(B,256,30,30)`.
+
+`make_figures.py` emits `figures_editable.pptx`, whose every block, channel count and
+grid is derived from the model YAML, so the figure cannot drift from the network again.
+Shapes are native PowerPoint shapes and the arrows are attached to them, so blocks stay
+connected when dragged. Slide 1 replaces Fig. 5, slide 2 replaces Fig. 7.
+
+Point it at a different config to document a different variant:
+
+```bash
+python ablation/make_figures.py --config configs/full_rearranged.yaml --out rearranged.pptx
+```
+
 ## Regenerating Table 5
 
 Table 5 disagrees with Fig. 11(b) on every class by +1.6 to +15.7 mAP50 points, all in
@@ -150,6 +170,7 @@ keeps it in git-lfs and a plain clone yields a pointer file. The script checks f
 | `build_notebook.py` | regenerates `probe_kaggle.ipynb` |
 | `probe_kaggle.ipynb` | upload this to Kaggle |
 | `trace_args.py` | reproduces the defect without torch |
+| `make_figures.py` / `figures_editable.pptx` | editable replacements for Fig. 5 and Fig. 7 |
 | `revalidate.py` | regenerates the class-wise MLT table from `best.pt` |
 | `build_revalidate.py` / `revalidate_kaggle.ipynb` | run that on Kaggle |
 
