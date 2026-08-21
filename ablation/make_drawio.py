@@ -29,15 +29,22 @@ from make_figures import trace  # noqa: E402
 
 BOX_W, BOX_H = 132, 46
 
+# saxutils.escape leaves quotes alone, which would break an attribute value.
+QUOTES = {'"': "&quot;", "'": "&apos;"}
+
+# Stock YOLO operators share one cool blue-grey family so they recede; the two
+# contributed modules take warm accents; merges take a muted sage; the head is the
+# only saturated block. The fills differ in lightness as well as hue, so the figure
+# survives greyscale printing.
 FILL = {
-    "conv": ("#FCE4C8", "#B07A3F", "#000000"),
-    "c3k2": ("#BDD7EE", "#4A7EAA", "#000000"),
-    "cbam": ("#F2A9D2", "#B05B8C", "#000000"),
-    "sppf": ("#2E75B6", "#1F4E79", "#FFFFFF"),
-    "attn": ("#E8503A", "#96301F", "#FFFFFF"),
-    "up": ("#F8CBAD", "#C07A4F", "#000000"),
-    "cat": ("#A9D18E", "#5E8A47", "#000000"),
-    "head": ("#4472C4", "#2A4A85", "#FFFFFF"),
+    "conv": ("#EDF2F7", "#7D97AE", "#1A2733"),
+    "c3k2": ("#D7E4F0", "#5A85AD", "#16222E"),
+    "sppf": ("#B6CDE3", "#3F6D9B", "#121D28"),
+    "up":   ("#E4EBF1", "#8AA2B8", "#1A2733"),
+    "cat":  ("#DEE8DD", "#6D8B72", "#1B2A1E"),
+    "cbam": ("#F6E6C8", "#B08A44", "#3A2A0C"),
+    "attn": ("#E4D8EC", "#7A5B96", "#2A1C38"),
+    "head": ("#2F4E70", "#20374F", "#FFFFFF"),
 }
 
 NODES: dict[int, tuple[int, int, str, str, str]] = {
@@ -52,7 +59,7 @@ NODES: dict[int, tuple[int, int, str, str, str]] = {
     8:  (55,   371, "C3k2\n(c=1024, shortcut)", "c3k2", "x2"),
     9:  (200,  371, "SPPF\n(c=1024, k=5)", "sppf", ""),
     10: (345,  371, "Conv\n(c=1024, 1x1)", "conv", ""),
-    11: (490,  371, "Cross\nAttention", "attn", ""),
+    11: (490,  371, "Cross-Attention\n(h=8, c=1024)", "attn", ""),
     12: (635,  371, "MS-CBAM\n(c=1024, r=16)", "cbam", ""),
     13: (635,  474, "UpSample", "up", ""),
     14: (345,  474, "Concat", "cat", ""),
@@ -129,10 +136,10 @@ def to_xml(pairs: list[tuple[int, int]]) -> str:
 
     for name, x, y, w, h, dashed, label in PANELS:
         style = (
-            f"rounded=1;arcSize=6;whiteSpace=wrap;html=1;dashed={dashed};"
-            "dashPattern=8 6;fillColor=none;strokeColor=#333333;strokeWidth=1.5;"
-            "verticalAlign=top;align=left;spacingLeft=10;spacingTop=4;fontSize=11;"
-            "fontColor=#555555;"
+            f"rounded=1;arcSize=4;whiteSpace=wrap;html=1;dashed={dashed};"
+            "dashPattern=8 5;fillColor=#FAFBFC;strokeColor=#AAB8C4;strokeWidth=1.1;"
+            "verticalAlign=top;align=left;spacingLeft=12;spacingTop=6;fontSize=11;"
+            "fontFamily=Helvetica;fontStyle=1;fontColor=#8194A5;"
         )
         cells.append(
             f'<mxCell id="{name}" value="{escape(label)}" style="{style}" vertex="1" '
@@ -143,19 +150,24 @@ def to_xml(pairs: list[tuple[int, int]]) -> str:
     for idx, (x, y, caption, kind, repeat) in NODES.items():
         fill, stroke, font = FILL[kind]
         style = (
-            "rounded=1;arcSize=18;whiteSpace=wrap;html=1;fontSize=9;"
-            f"fontFamily=Helvetica;fillColor={fill};strokeColor={stroke};"
-            f"fontColor={font};strokeWidth=1.2;"
+            "rounded=1;arcSize=14;whiteSpace=wrap;html=1;fontSize=10;"
+            "fontFamily=Helvetica;verticalAlign=middle;"
+            f"fillColor={fill};strokeColor={stroke};fontColor={font};strokeWidth=1.1;"
         )
+        name, _, params = caption.partition("\n")
+        label = f"<b>{escape(name)}</b>"
+        if params:
+            label += f"<br><font style='font-size:8px'>{escape(params)}</font>"
         cells.append(
-            f'<mxCell id="n{idx}" value="{escape(caption)}" style="{style}" vertex="1" '
+            f'<mxCell id="n{idx}" value="{escape(label, QUOTES)}" style="{style}" '
+            f'vertex="1" '
             f'parent="1"><mxGeometry x="{x}" y="{y}" width="{BOX_W}" height="{BOX_H}" '
             f'as="geometry"/></mxCell>'
         )
         if repeat:
             cells.append(
                 f'<mxCell id="r{idx}" value="{repeat}" style="text;html=1;align=center;'
-                'fontSize=9;fontFamily=Helvetica;fontColor=#333333;" vertex="1" '
+                'fontSize=8;fontFamily=Helvetica;fontStyle=2;fontColor=#7D8B98;" vertex="1" '
                 f'parent="1"><mxGeometry x="{x + BOX_W - 28}" y="{y - 17}" width="28" '
                 'height="16" as="geometry"/></mxCell>'
             )
@@ -163,9 +175,10 @@ def to_xml(pairs: list[tuple[int, int]]) -> str:
     for n, (a, b) in enumerate(pairs):
         routed = (a, b) in WAYPOINTS
         style = (
-            "edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jettySize=auto;"
-            "endArrow=block;endFill=1;endSize=5;strokeColor=#31506B;"
-            f"strokeWidth={'1.1' if routed else '1.5'};"
+            "edgeStyle=orthogonalEdgeStyle;rounded=1;arcSize=10;html=1;jettySize=auto;"
+            "endArrow=blockThin;endFill=1;endSize=6;"
+            + ("strokeColor=#9FB2C4;strokeWidth=1;"
+               if routed else "strokeColor=#44607A;strokeWidth=1.5;")
         )
         points = ""
         if routed:
@@ -187,7 +200,7 @@ def to_xml(pairs: list[tuple[int, int]]) -> str:
     return (
         '<mxGraphModel dx="1500" dy="820" grid="0" gridSize="10" guides="1" '
         'tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" '
-        'pageWidth="1420" pageHeight="820" math="0" shadow="0" adaptiveColors="auto">'
+        'pageWidth="1420" pageHeight="820" math="0" shadow="0" adaptiveColors="0" background="#FFFFFF">'
         f'<root><mxCell id="0"/><mxCell id="1" parent="0"/>{body}</root>'
         "</mxGraphModel>"
     )
