@@ -1,15 +1,20 @@
-"""Emit a publication-figure architecture diagram as draw.io XML.
+"""Redraw the published Fig. 5 in its own visual language, with the architecture fixed.
 
     python ablation/make_drawio.py --config configs/full_legacy.yaml
 
-The 29 layers of the config are grouped into 11 nodes laid out as a feature pyramid:
-one row per level (P3, P4, P5), flowing left to right through backbone, top-down path,
-bottom-up path and head. Every edge is derived from the config's `from` lists rather
-than drawn by hand, and GROUPS is checked against the config at build time, so the
-figure cannot claim a connection the network does not have.
+Keeps what the published figure already does: a dashed backbone panel on the left with
+serpentine rows, a solid neck panel on the right pairing a bottom-up column with a
+top-down one, the same fill colours, the same `(c=..., ...)` captions and the same `x2`
+repeat markers.
 
-A per-layer version of the same diagram is unreadable at IEEE column width: 29 boxes
-across a double-column figure leaves each about 6 mm wide.
+What changes is the network depicted. The published figure draws a C2PSA block between
+SPPF and the Cross-Attention block, and an MS-CBAM inside the backbone; the trained
+config has a plain `Conv [1024,1,1]` where C2PSA appears and no backbone MS-CBAM at
+all. It labels the head `Detect` where the model uses `OBB`, and omits the three-input
+concatenations that make the neck a BiFPN.
+
+Channel values are the YAML arguments, matching the published figure's convention
+rather than the scale-resolved widths.
 """
 
 from __future__ import annotations
@@ -22,129 +27,168 @@ from xml.sax.saxutils import escape
 sys.path.insert(0, str(Path(__file__).parent))
 from make_figures import trace  # noqa: E402
 
-# Which config layers each figure node stands for.
-GROUPS: dict[str, list[int]] = {
-    "stem": [0, 1, 2],
-    "bp3": [3, 4],
-    "bp4": [5, 6],
-    "bp5": [7, 8, 9, 10],
-    "xat": [11],
-    "cb5": [12],
-    "td4": [13, 14, 15],
-    "td3": [16, 17, 18, 19],
-    "bu4": [20, 21, 22, 23],
-    "bu5": [24, 25, 26, 27],
-    "head": [28],
+BOX_W, BOX_H = 132, 46
+
+FILL = {
+    "conv": ("#FCE4C8", "#B07A3F", "#000000"),
+    "c3k2": ("#BDD7EE", "#4A7EAA", "#000000"),
+    "cbam": ("#F2A9D2", "#B05B8C", "#000000"),
+    "sppf": ("#2E75B6", "#1F4E79", "#FFFFFF"),
+    "attn": ("#E8503A", "#96301F", "#FFFFFF"),
+    "up": ("#F8CBAD", "#C07A4F", "#000000"),
+    "cat": ("#A9D18E", "#5E8A47", "#000000"),
+    "head": ("#4472C4", "#2A4A85", "#FFFFFF"),
 }
 
-ROW = {"P3": 110, "P4": 290, "P5": 470}
-BOX_W, BOX_H = 162, 112
-
-NODES: dict[str, tuple[int, int, str, str]] = {
-    "input": (30, ROW["P3"], "Input\n480 x 480", "input"),
-    "stem": (220, ROW["P3"], "Stem\nP2/4, c=128", "conv"),
-    "bp3": (410, ROW["P3"], "Backbone P3/8\nc=256, 60x60", "conv"),
-    "bp4": (410, ROW["P4"], "Backbone P4/16\nc=256, 30x30", "conv"),
-    "bp5": (410, ROW["P5"], "Backbone P5/32\nSPPF, Conv 1x1\nc=512, 15x15", "conv"),
-    "xat": (600, ROW["P5"], "Cross-Attention\nQ: P5, K/V: P4\n8 heads, c=512", "attn"),
-    "cb5": (790, ROW["P5"], "MS-CBAM\nc=512, 15x15", "cbam"),
-    "td4": (790, ROW["P4"], "Top-down P4\nUpsample + Concat\nc=256, 30x30", "neck"),
-    "td3": (980, ROW["P3"], "Top-down P3\nConcat, MS-CBAM\nc=128, 60x60", "neck"),
-    "bu4": (1170, ROW["P4"], "Bottom-up P4\n3-way Concat\nMS-CBAM, c=256", "neck"),
-    "bu5": (1360, ROW["P5"], "Bottom-up P5\n3-way Concat\nMS-CBAM, c=512", "neck"),
-    "head": (1550, ROW["P4"], "OBB Head\nP3 / P4 / P5\n8 classes", "head"),
+NODES: dict[int, tuple[int, int, str, str, str]] = {
+    0:  (55,   165, "Conv\n(c=64,3x3,k=2)", "conv", ""),
+    1:  (200,  165, "Conv\n(c=128,3x3,k=2)", "conv", ""),
+    2:  (345,  165, "C3k2\n(c=256, scale=0.25)", "c3k2", "x2"),
+    3:  (490,  165, "Conv\n(c=256,3x3,k=2)", "conv", ""),
+    4:  (490,  268, "C3k2\n(c=512, scale=0.25)", "c3k2", "x2"),
+    5:  (345,  268, "Conv\n(c=512,3x3,k=2)", "conv", ""),
+    6:  (200,  268, "C3k2\n(c=512, shortcut)", "c3k2", "x2"),
+    7:  (55,   268, "Conv\n(c=1024,3x3,k=2)", "conv", ""),
+    8:  (55,   371, "C3k2\n(c=1024, shortcut)", "c3k2", "x2"),
+    9:  (200,  371, "SPPF\n(c=1024, k=5)", "sppf", ""),
+    10: (345,  371, "Conv\n(c=1024, 1x1)", "conv", ""),
+    11: (490,  371, "Cross\nAttention", "attn", ""),
+    12: (635,  371, "MS-CBAM\n(c=1024, r=16)", "cbam", ""),
+    13: (635,  474, "UpSample", "up", ""),
+    14: (345,  474, "Concat", "cat", ""),
+    15: (905,  560, "C3k2\n(c=512, shortcut)", "c3k2", "x2"),
+    16: (905,  474, "UpSample", "up", ""),
+    17: (905,  388, "Concat", "cat", ""),
+    18: (905,  302, "C3k2\n(c=256, scale=0.25)", "c3k2", "x2"),
+    19: (905,  216, "MS-CBAM\n(c=256, r=16)", "cbam", ""),
+    20: (905,  130, "Conv\n(c=256,3x3,k=2)", "conv", ""),
+    21: (1155, 130, "Concat", "cat", ""),
+    22: (1155, 202, "C3k2\n(c=512, shortcut)", "c3k2", "x2"),
+    23: (1155, 274, "MS-CBAM\n(c=512, r=16)", "cbam", ""),
+    24: (1155, 346, "Conv\n(c=512,3x3,k=2)", "conv", ""),
+    25: (1155, 418, "Concat", "cat", ""),
+    26: (1155, 490, "C3k2\n(c=1024, shortcut)", "c3k2", "x2"),
+    27: (1155, 562, "MS-CBAM\n(c=1024, r=16)", "cbam", ""),
+    28: (1155, 634, "OBB Detect\n(nc=8)", "head", ""),
 }
 
-STYLE = {
-    "input": "fillColor=#FFFFFF;strokeColor=#666666;",
-    "conv": "fillColor=#FCE4C8;strokeColor=#B07A3F;",
-    "attn": "fillColor=#E8503A;strokeColor=#96301F;fontColor=#FFFFFF;",
-    "cbam": "fillColor=#F2A9D2;strokeColor=#B05B8C;",
-    "neck": "fillColor=#BDD7EE;strokeColor=#4A7EAA;",
-    "head": "fillColor=#4472C4;strokeColor=#2A4A85;fontColor=#FFFFFF;",
+PANELS = [
+    ("bb", 28, 128, 750, 420, "1", "Backbone"),
+    ("nk", 868, 95, 432, 632, "0", "Neck and head"),
+]
+
+# Long-range links routed through clear lanes, as the published figure does.
+# SIDES fixes which edge of a block a link leaves and enters by, so the corner the
+# router inserts cannot double back across the block it just left.
+SIDES: dict[tuple[int, int], tuple[str, str]] = {
+    (5, 11):  ("bottom", "top"),
+    (6, 14):  ("top", "left"),
+    (6, 21):  ("top", "top"),
+    (4, 17):  ("right", "left"),
+    (14, 15): ("bottom", "left"),
+    (15, 21): ("right", "top"),
+    (12, 25): ("top", "left"),
+    (10, 25): ("bottom", "left"),
+    (19, 28): ("left", "bottom"),
+    (23, 28): ("right", "bottom"),
 }
 
-# Edges whose straight run would cross an intervening box, routed through a clear band.
-LANES: dict[tuple[str, str], int] = {("bp4", "bu4"): 248, ("bp5", "bu5"): 432}
-EDGE_LABEL = {("bp5", "xat"): "Q", ("bp4", "xat"): "K/V"}
+WAYPOINTS: dict[tuple[int, int], list[tuple[int, int]]] = {
+    (5, 11):  [(411, 344), (556, 344)],
+    (6, 14):  [(266, 232), (40, 232), (40, 497)],
+    (6, 21):  [(266, 248), (700, 248), (700, 68), (1221, 68)],
+    (4, 17):  [(660, 291), (660, 118), (818, 118), (818, 411)],
+    (14, 15): [(411, 545), (860, 545), (860, 583)],
+    (15, 21): [(1063, 583), (1063, 100), (1221, 100)],
+    (12, 25): [(701, 344), (838, 344), (838, 455), (1120, 455)],
+    (10, 25): [(411, 462), (1108, 462)],
+    (19, 28): [(880, 239), (880, 790), (1221, 790)],
+    (23, 28): [(1330, 297), (1330, 760), (1221, 760)],
+}
+
+EXIT_X = {"left": 0.0, "right": 1.0, "top": 0.5, "bottom": 0.5}
+EXIT_Y = {"left": 0.5, "right": 0.5, "top": 0.0, "bottom": 1.0}
 
 
-def derive_edges(config: Path) -> list[tuple[str, str, bool]]:
-    """Inter-group edges implied by the config, flagged as skip or sequential."""
-    layers = {l.index: l for l in trace(config)}
-    missing = set(layers) - {i for v in GROUPS.values() for i in v}
+def links(config: Path) -> list[tuple[int, int]]:
+    """Every (source, target) pair the config declares."""
+    pairs = [
+        (src, layer.index)
+        for layer in trace(config)
+        for src in layer.sources
+        if src >= 0
+    ]
+    missing = {i for pair in pairs for i in pair} - set(NODES)
     if missing:
-        raise SystemExit(f"GROUPS does not cover layers {sorted(missing)}")
-
-    owner = {i: g for g, idx in GROUPS.items() for i in idx}
-    order = list(NODES)
-    seen: list[tuple[str, str, bool]] = []
-    for layer in layers.values():
-        for src in layer.sources:
-            if src < 0 or owner[src] == owner[layer.index]:
-                continue
-            a, b = owner[src], owner[layer.index]
-            skip = abs(order.index(b) - order.index(a)) > 1
-            if (a, b, skip) not in seen:
-                seen.append((a, b, skip))
-    return [("input", "stem", False)] + seen
+        raise SystemExit(f"NODES is missing layers {sorted(missing)}")
+    return pairs
 
 
-def to_xml(edges: list[tuple[str, str, bool]]) -> str:
+def to_xml(pairs: list[tuple[int, int]]) -> str:
     cells: list[str] = []
-    for name, (x, y, label, kind) in NODES.items():
+
+    for name, x, y, w, h, dashed, label in PANELS:
         style = (
-            "rounded=1;whiteSpace=wrap;html=1;fontSize=11;fontFamily=Helvetica;"
-            "arcSize=12;verticalAlign=middle;" + STYLE[kind]
+            f"rounded=1;arcSize=6;whiteSpace=wrap;html=1;dashed={dashed};"
+            "dashPattern=8 6;fillColor=none;strokeColor=#333333;strokeWidth=1.5;"
+            "verticalAlign=top;align=left;spacingLeft=10;spacingTop=4;fontSize=11;"
+            "fontColor=#555555;"
         )
         cells.append(
             f'<mxCell id="{name}" value="{escape(label)}" style="{style}" vertex="1" '
-            f'parent="1"><mxGeometry x="{x}" y="{y}" width="{BOX_W}" height="{BOX_H}" '
+            f'parent="1"><mxGeometry x="{x}" y="{y}" width="{w}" height="{h}" '
             f'as="geometry"/></mxCell>'
         )
 
-    for n, (a, b, skip) in enumerate(edges):
+    for idx, (x, y, caption, kind, repeat) in NODES.items():
+        fill, stroke, font = FILL[kind]
+        style = (
+            "rounded=1;arcSize=18;whiteSpace=wrap;html=1;fontSize=9;"
+            f"fontFamily=Helvetica;fillColor={fill};strokeColor={stroke};"
+            f"fontColor={font};strokeWidth=1.2;"
+        )
+        cells.append(
+            f'<mxCell id="n{idx}" value="{escape(caption)}" style="{style}" vertex="1" '
+            f'parent="1"><mxGeometry x="{x}" y="{y}" width="{BOX_W}" height="{BOX_H}" '
+            f'as="geometry"/></mxCell>'
+        )
+        if repeat:
+            cells.append(
+                f'<mxCell id="r{idx}" value="{repeat}" style="text;html=1;align=center;'
+                'fontSize=9;fontFamily=Helvetica;fontColor=#333333;" vertex="1" '
+                f'parent="1"><mxGeometry x="{x + BOX_W - 28}" y="{y - 17}" width="28" '
+                'height="16" as="geometry"/></mxCell>'
+            )
+
+    for n, (a, b) in enumerate(pairs):
+        routed = (a, b) in WAYPOINTS
         style = (
             "edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jettySize=auto;"
-            "endArrow=block;endFill=1;endSize=6;fontSize=10;fontFamily=Helvetica;"
-            + ("dashed=1;strokeColor=#7F9BB5;strokeWidth=1.4;"
-               if skip else "strokeColor=#31506B;strokeWidth=1.8;")
+            "endArrow=block;endFill=1;endSize=5;strokeColor=#31506B;"
+            f"strokeWidth={'1.1' if routed else '1.5'};"
         )
-        label = escape(EDGE_LABEL.get((a, b), ""))
         points = ""
-        if (a, b) in LANES:
-            lane = LANES[(a, b)]
-            ax = NODES[a][0] + BOX_W // 2
-            bx = NODES[b][0] + BOX_W // 2
-            points = (
-                f'<Array as="points"><mxPoint x="{ax}" y="{lane}"/>'
-                f'<mxPoint x="{bx}" y="{lane}"/></Array>'
+        if routed:
+            inner = "".join(f'<mxPoint x="{px}" y="{py}"/>' for px, py in WAYPOINTS[(a, b)])
+            points = f'<Array as="points">{inner}</Array>'
+        if (a, b) in SIDES:
+            out_side, in_side = SIDES[(a, b)]
+            style += (
+                f"exitX={EXIT_X[out_side]};exitY={EXIT_Y[out_side]};exitDx=0;exitDy=0;"
+                f"entryX={EXIT_X[in_side]};entryY={EXIT_Y[in_side]};entryDx=0;entryDy=0;"
             )
         cells.append(
-            f'<mxCell id="e{n}" value="{label}" style="{style}" edge="1" parent="1" '
-            f'source="{a}" target="{b}"><mxGeometry relative="1" as="geometry">'
-            f'{points}</mxGeometry></mxCell>'
+            f'<mxCell id="e{n}" style="{style}" edge="1" parent="1" source="n{a}" '
+            f'target="n{b}"><mxGeometry relative="1" as="geometry">{points}'
+            "</mxGeometry></mxCell>"
         )
-
-    legend = (
-        "Solid arrows: sequential dataflow.  Dashed arrows: skip connections feeding "
-        "the BiFPN concatenations.  Channel counts are for the s scale (width 0.50); "
-        "grids for a 480x480 input."
-    )
-    cells.append(
-        f'<mxCell id="legend" value="{escape(legend)}" '
-        f'style="text;html=1;align=left;verticalAlign=top;fontSize=10;'
-        f'fontFamily=Helvetica;fontColor=#595959;whiteSpace=wrap;" vertex="1" '
-        f'parent="1"><mxGeometry x="30" y="620" width="1680" height="40" '
-        f'as="geometry"/></mxCell>'
-    )
 
     body = "".join(cells)
     return (
-        '<mxGraphModel dx="1600" dy="800" grid="0" gridSize="10" guides="1" '
+        '<mxGraphModel dx="1500" dy="820" grid="0" gridSize="10" guides="1" '
         'tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" '
-        'pageWidth="1760" pageHeight="700" math="0" shadow="0" adaptiveColors="auto">'
-        f"<root><mxCell id=\"0\"/><mxCell id=\"1\" parent=\"0\"/>{body}</root>"
+        'pageWidth="1420" pageHeight="820" math="0" shadow="0" adaptiveColors="auto">'
+        f'<root><mxCell id="0"/><mxCell id="1" parent="0"/>{body}</root>'
         "</mxGraphModel>"
     )
 
@@ -157,12 +201,11 @@ def main() -> int:
                         default=Path(__file__).parent / "architecture.drawio")
     opts = parser.parse_args()
 
-    edges = derive_edges(opts.config)
-    opts.out.write_text(to_xml(edges), encoding="utf-8")
-
+    pairs = links(opts.config)
+    opts.out.write_text(to_xml(pairs), encoding="utf-8")
     print(f"wrote {opts.out}")
-    print(f"  {len(NODES)} nodes, {len(edges)} edges, "
-          f"{sum(1 for *_, s in edges if s)} of them skips")
+    print(f"  {len(NODES)} blocks, {len(pairs)} links, "
+          f"{len(WAYPOINTS)} routed through the margins")
     return 0
 
 
