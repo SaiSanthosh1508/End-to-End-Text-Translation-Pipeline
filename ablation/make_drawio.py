@@ -36,8 +36,10 @@ QUOTES = {'"': "&quot;", "'": "&apos;"}
 # convolutions lightest, block stacks mid, the pooling stage darkest. Resampling
 # takes a warm neutral and merges a sage, so the two structural operations read
 # apart from the convolutions at a glance. The two contributed modules take gold
-# and plum, and the head is the single dark terminal. Fills are ordered by
-# lightness as well as hue, so the figure holds up printed in greyscale.
+# and plum, and the head a warm rose that appears nowhere else. Every block is
+# a light fill with dark text, so no label depends on a reversed-out colour.
+# Fills are ordered by lightness as well as hue, so the figure holds up
+# printed in greyscale.
 FILL = {
     "conv": ("#E1EDF8", "#3D6B99", "#12202D"),
     "c3k2": ("#BFD8EE", "#2C5F8F", "#0E1C27"),
@@ -46,7 +48,7 @@ FILL = {
     "cat":  ("#D2E4C6", "#5C8749", "#182513"),
     "cbam": ("#F8D79A", "#C0891C", "#332508"),
     "attn": ("#E0CBEE", "#6C4A94", "#22142E"),
-    "head": ("#23445F", "#142C3E", "#FFFFFF"),
+    "head": ("#F3CFC8", "#B0503F", "#3A1610"),
 }
 
 NODES: dict[int, tuple[int, int, str, str, str]] = {
