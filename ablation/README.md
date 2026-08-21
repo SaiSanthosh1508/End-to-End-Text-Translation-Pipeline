@@ -128,10 +128,18 @@ Fig. 7 labels the query as the C2PSA output at `(B,1024,15,15)` and the key/valu
 MS-CBAM-refined map at `(B,256,15,15)`; they are really the P5/32 output at
 `(B,512,15,15)` and a plain P4/16 map at `(B,256,30,30)`.
 
-`make_figures.py` emits `figures_editable.pptx`, whose every block, channel count and
-grid is derived from the model YAML, so the figure cannot drift from the network again.
-Shapes are native PowerPoint shapes and the arrows are attached to them, so blocks stay
-connected when dragged. Slide 1 replaces Fig. 5, slide 2 replaces Fig. 7.
+Two generators, for two different jobs.
+
+`make_drawio.py` emits `architecture.drawio`, the figure meant for the manuscript. The
+29 layers are grouped into 11 nodes laid out as a feature pyramid, one row per level,
+flowing left to right through backbone, top-down path, bottom-up path and head. Every
+edge is derived from the config's `from` lists, and the grouping is checked for full
+coverage at build time, so the figure cannot claim a connection the network lacks.
+Open it in draw.io and export to SVG or PDF for print.
+
+A per-layer version is unreadable at IEEE width: 29 boxes across a double-column figure
+leaves each about 6 mm. `make_figures.py` emits that version as `figures_editable.pptx`
+for the repository and for checking the diagram against the YAML.
 
 Point it at a different config to document a different variant:
 
@@ -170,7 +178,8 @@ keeps it in git-lfs and a plain clone yields a pointer file. The script checks f
 | `build_notebook.py` | regenerates `probe_kaggle.ipynb` |
 | `probe_kaggle.ipynb` | upload this to Kaggle |
 | `trace_args.py` | reproduces the defect without torch |
-| `make_figures.py` / `figures_editable.pptx` | editable replacements for Fig. 5 and Fig. 7 |
+| `make_drawio.py` / `architecture.drawio` | publication figure, editable in draw.io |
+| `make_figures.py` / `figures_editable.pptx` | per-layer diagram, editable in PowerPoint |
 | `revalidate.py` | regenerates the class-wise MLT table from `best.pt` |
 | `build_revalidate.py` / `revalidate_kaggle.ipynb` | run that on Kaggle |
 
