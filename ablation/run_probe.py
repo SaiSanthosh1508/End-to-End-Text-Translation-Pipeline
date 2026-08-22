@@ -23,6 +23,12 @@ from ultralytics import YOLO
 
 CONFIGS = Path(__file__).parent / "configs"
 ARMS = {
+    # Table 8, one component added per row. Row 6 is the deployed model.
+    "a1_stock": "a1_stock.yaml",
+    "a2_bifpn": "a2_bifpn.yaml",
+    "a3_stdcbam": "a3_bifpn_stdcbam.yaml",
+    "a4_mscbam": "a4_bifpn_mscbam.yaml",
+    "a5_crossattn": "a5_bifpn_crossattn.yaml",
     "legacy": "full_legacy.yaml",
     "fixed": "full_fixed.yaml",
     # The architecture arms, run separately from the bottleneck probe: they answer
