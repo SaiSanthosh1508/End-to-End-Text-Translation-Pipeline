@@ -32,8 +32,8 @@ Google Drive ID the old notebooks used now returns 404; this Kaggle dataset is
 the only surviving copy of the converted MLT set (9,000 train / 1,000 val, 9-column
 oriented labels).
 
-**Session plan.** Each run is ~4.6 h on T4 x2, so budget two runs per session and
-check your account's GPU session cap first. Edit `THIS_SESSION` below, then
+**Session plan.** A run is ~4.6 h on T4 x2 (~6.4 h for the `p2` arm), so budget two
+per session and check your account's GPU session cap first. Edit `THIS_SESSION` below, then
 *Save Version -> Save & Run All*. For sessions 2 and 3, attach the previous
 session's output as an input dataset so completed runs are skipped.
 
@@ -49,6 +49,10 @@ run reproducible without a Drive link.""",
 ]
 # session 2: [("legacy", 1337), ("fixed", 1337)]
 # session 3: [("legacy", 2024), ("fixed", 2024)]
+#
+# The architecture arms answer a different question and run on their own:
+#   [("p2", 42)]           rearranged attention plus a stride-4 head, ~6.4 h
+#   [("rearranged", 42)]   the placement change alone, ~4.6 h
 
 PROJECT = "/kaggle/working/runs/probe"
 SNAPSHOT = "/kaggle/working/snapshot"

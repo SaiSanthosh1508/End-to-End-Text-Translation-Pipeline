@@ -44,6 +44,42 @@ Two arms, three seeds each, six runs, ~28 GPU-hours on two T4s.
 The two configs are byte-identical apart from the CBAM class name, so the comparison
 isolates the bottleneck width and nothing else.
 
+## Is recall bounded by resolution?
+
+Measured on 1,239 MLT-2019 images and 14,022 instances, at 480px input the median
+text instance is 13.1px tall and 34.2% fall below one P3 cell. Median size per script
+tracks the class-wise recall of the trained checkpoint at Spearman rho = 0.833:
+
+| script | median px @480 | recall |
+| --- | ---: | ---: |
+| Other | 6.7 | 2.5 |
+| Latin | 10.1 | 55.2 |
+| Chinese | 20.4 | 66.5 |
+| Korean | 21.2 | 56.5 |
+| Japanese | 22.4 | 39.9 |
+| Arabic | 33.6 | 72.5 |
+| Bangla | 66.2 | 88.7 |
+| Hindi | 93.9 | 93.9 |
+
+Japanese is the outlier: fifth largest text, second worst recall, so something other
+than size limits it there.
+
+Coverage against cost, on the same measurement:
+
+| configuration | below one cell | cost | hours |
+| --- | ---: | ---: | ---: |
+| 480px, P3 (current) | 34.2% | 1.00x | 4.6 |
+| 640px, P3 | 24.3% | 1.78x | 8.1 |
+| 960px, P3 | 12.5% | 4.00x | 18.3 |
+| **480px, + P2 head** | **12.5%** | **1.40x** | **6.4** |
+| 640px, + P2 head | 6.2% | 2.49x | 11.4 |
+
+A stride-4 cell at 480px and a stride-8 cell at 960px are the same size in image
+terms, so the head reaches the same coverage for a third of the compute. 960px also
+exceeds Kaggle's 12 h session cap.
+
+`configs/full_rearranged_p2.yaml` is that configuration; run it with `--arms p2`.
+
 ## Data
 
 Attach `rishiksaisanthosh/dataset-test` to the notebook. Every Google Drive ID the

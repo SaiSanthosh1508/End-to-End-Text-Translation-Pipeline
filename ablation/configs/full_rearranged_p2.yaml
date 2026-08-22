@@ -1,0 +1,64 @@
+# The rearranged model with a fourth detection level at stride 4.
+#
+# Measured on 1,239 MLT-2019 images and 14,022 text instances: at 480px input the
+# median instance is 13.1px tall and 34.2% fall below one P3 cell, which bounds
+# recall regardless of how the features are refined. A P2/4 head takes that
+# fraction to 12.5% for about 1.4x the compute. Reaching the same 12.5% by raising
+# the input to 960px would cost 4x, because a stride-4 cell at 480px and a stride-8
+# cell at 960px are the same size in image terms.
+#
+# Cross-attention stays at P3. Querying from P2 would mean 14,400 query tokens
+# against 225 key/value tokens, roughly twenty times the attention cost, for detail
+# the P2 branch already carries.
+nc: 8
+scales:
+  n: [0.50, 0.25, 1024]
+  s: [0.50, 0.50, 1024]
+  m: [0.50, 1.00, 512]
+  l: [1.00, 1.00, 512]
+  x: [1.00, 1.50, 512]
+
+backbone:
+  - [-1, 1, Conv, [64, 3, 2]]          # 0-P1/2
+  - [-1, 1, Conv, [128, 3, 2]]         # 1-P2/4
+  - [-1, 2, C3k2, [256, False, 0.25]]  # 2-P2 tap for the new head
+  - [-1, 1, Conv, [256, 3, 2]]         # 3-P3/8
+  - [-1, 2, C3k2, [512, False, 0.25]]  # 4-P3 tap
+  - [-1, 1, Conv, [512, 3, 2]]         # 5-P4/16
+  - [-1, 2, C3k2, [512, True]]         # 6-P4 tap
+  - [-1, 1, Conv, [1024, 3, 2]]        # 7-P5/32
+  - [-1, 2, C3k2, [1024, True]]        # 8
+  - [-1, 1, SPPF, [1024, 5]]           # 9
+  - [-1, 2, C2PSA, [1024]]             # 10-P5 semantic source
+
+head:
+  - [-1, 1, nn.Upsample, [None, 2, "nearest"]]       # 11
+  - [[-1, 6], 1, Concat, [1]]                        # 12
+  - [-1, 2, C3k2, [512, False]]                      # 13 P4 top-down
+
+  - [-1, 1, nn.Upsample, [None, 2, "nearest"]]       # 14
+  - [[-1, 4], 1, Concat, [1]]                        # 15
+  - [-1, 2, C3k2, [256, False]]                      # 16 P3 top-down
+
+  - [[10, -1], 1, CrossAttentionBlock, [256, 1024]]  # 17 Q=P3, K/V=P5
+
+  - [-1, 1, nn.Upsample, [None, 2, "nearest"]]       # 18
+  - [[-1, 2], 1, Concat, [1]]                        # 19
+  - [-1, 2, C3k2, [256, False]]                      # 20 P2 top-down
+  - [-1, 1, MSCBAMFixed, [256, 16]]                  # 21 (P2/4-tiny)
+
+  - [-1, 1, Conv, [256, 3, 2]]                       # 22
+  - [[-1, 17, 4], 1, Concat, [1]]                    # 23 BiFPN tri-input
+  - [-1, 2, C3k2, [256, False]]                      # 24
+  - [-1, 1, MSCBAMFixed, [256, 16]]                  # 25 (P3/8-small)
+
+  - [-1, 1, Conv, [256, 3, 2]]                       # 26
+  - [[-1, 13, 6], 1, Concat, [1]]                    # 27 BiFPN tri-input
+  - [-1, 2, C3k2, [512, False]]                      # 28
+  - [-1, 1, MSCBAMFixed, [512, 16]]                  # 29 (P4/16-medium)
+
+  - [-1, 1, Conv, [512, 3, 2]]                       # 30
+  - [[-1, 10], 1, Concat, [1]]                       # 31
+  - [-1, 2, C3k2, [1024, True]]                      # 32 (P5/32-large)
+
+  - [[21, 25, 29, 32], 1, OBB, [nc, 1]]

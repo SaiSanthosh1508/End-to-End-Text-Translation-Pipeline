@@ -22,7 +22,15 @@ from pathlib import Path
 from ultralytics import YOLO
 
 CONFIGS = Path(__file__).parent / "configs"
-ARMS = {"legacy": "full_legacy.yaml", "fixed": "full_fixed.yaml"}
+ARMS = {
+    "legacy": "full_legacy.yaml",
+    "fixed": "full_fixed.yaml",
+    # The architecture arms, run separately from the bottleneck probe: they answer
+    # whether recall is bounded by sampling resolution rather than by feature
+    # refinement, which the probe does not address.
+    "rearranged": "full_rearranged.yaml",
+    "p2": "full_rearranged_p2.yaml",
+}
 SEEDS = (42, 1337, 2024)
 SNAPSHOT_FILES = ("results.csv", "args.yaml")
 
