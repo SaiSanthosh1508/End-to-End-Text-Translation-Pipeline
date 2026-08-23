@@ -99,35 +99,42 @@ mobile fine-tuned on ReCTS crops should land well above 0.7 on the held-out 10%.
     Global.save_inference_dir={EXPORT_DIR}
 !ls -la {EXPORT_DIR}"""),
 
+    ("markdown", """## 5. Persist it, then check it
+
+Archiving comes before the quality gate on purpose. A Kaggle version that raises
+saves no output at all, so an assertion here would throw away the two hours of
+training it was meant to protect. Nothing below this line is allowed to raise."""),
+
+    ("code", """import shutil
+archive = shutil.make_archive("/kaggle/working/rects_rec_finetuned", "zip", EXPORT_DIR)
+size_kb = Path(archive).stat().st_size // 1024
+print(archive, size_kb, "KB")
+if size_kb < 1000:
+    print("WARNING: archive is much smaller than a PP-OCRv5 mobile export should be")"""),
+
     ("markdown", """### Does it actually read ReCTS text?
 
-A broken export — wrong dictionary, wrong checkpoint — still loads and still returns
-strings. Reading held-out crops whose ground truth we know is the only cheap way to
-tell, and it costs seconds here versus discovering it after the 4.4 h detector run."""),
+A broken export - wrong dictionary, wrong checkpoint - still loads and still returns
+plausible strings. Reading held-out crops whose ground truth we know is the only cheap
+way to tell, and it is worth knowing now rather than after the 4.4 h detector run.
+
+This reports; it does not raise. Read the output before starting notebook 2."""),
 
     ("code", """import cv2
 from rects_control.recognizer import PaddleRecognizer
 
-rec = PaddleRecognizer(Path(EXPORT_DIR))
 rows = Path(DATA_ROOT, "rec_gt_test.txt").read_text(encoding="utf-8").splitlines()[:12]
 paths, truth = zip(*(r.split("\\t") for r in rows))
-
-predicted = rec([cv2.imread(str(Path(DATA_ROOT, p))) for p in paths])
-hits = sum(p == t for p, t in zip(predicted, truth))
-for p, t in zip(predicted, truth):
-    print(f"{'ok ' if p == t else '   '} pred={p!r:20s} gt={t!r}")
-print(f"\\n{hits}/{len(truth)} exact on a 12-crop sample")
-assert hits >= 4, "export looks wrong - do not spend GPU hours on the control yet\""""),
-
-    ("markdown", """## 5. Persist it
-
-The step whose omission cost the original weights. `/kaggle/working` survives only
-if you *Save Version*, so archive first and save after."""),
-
-    ("code", """import shutil
-archive = shutil.make_archive("/kaggle/working/rects_rec_finetuned", "zip", EXPORT_DIR)
-print(archive, Path(archive).stat().st_size // 1024, "KB")
-assert Path(archive).stat().st_size > 1_000_000, "archive is suspiciously small\""""),
+try:
+    predicted = PaddleRecognizer(Path(EXPORT_DIR))([cv2.imread(str(Path(DATA_ROOT, p))) for p in paths])
+    hits = sum(p == t for p, t in zip(predicted, truth))
+    for p, t in zip(predicted, truth):
+        print(f"{'ok ' if p == t else '   '} pred={p!r:20s} gt={t!r}")
+    verdict = "looks right" if hits >= 4 else "SUSPECT - do not start notebook 2 yet"
+    print(f"\\n{hits}/{len(truth)} exact on a 12-crop sample: {verdict}")
+except Exception as error:                 # the weights are already archived above
+    print(f"self-test could not run: {error!r}")
+    print("The export is still saved; investigate before starting notebook 2.")"""),
 
     ("markdown", """**Now: Save Version -> Save & Run All.**
 
@@ -223,9 +230,32 @@ n_test = len(image_files(Path("/kaggle/working")))
 print(f"{n_test} Task 3/4 test images")
 assert n_test > 1000, "test set looks truncated\""""),
 
-    ("markdown", """## 3. Train the arms
+    ("markdown", """## 3. Smoke-test the whole chain before spending GPU hours
 
-`stock` is `a1_stock.yaml` — YOLOv11s-OBB as shipped. `paper` is `full_legacy.yaml`,
+Detector to crop to recogniser to submission line, on one image, using the published
+checkpoint that already exists. If PaddleOCR cannot load the exported model this is
+where it surfaces - not 4.4 h from now, on a version that will save nothing."""),
+
+    ("code", """from PIL import Image
+from ultralytics import YOLO
+from rects_control.recognizer import PaddleRecognizer
+from rects_control.submission import clockwise_points, crop_bgr, detect, image_files
+
+recognizer = PaddleRecognizer(REC_DIR)
+probe = image_files(Path("/kaggle/working"))[0]
+image = Image.open(probe)
+quads = detect(YOLO(str(PAPER_CKPT)), image, 0.4)
+
+crops = [c for c in (crop_bgr(image, q) for q in quads) if c is not None and c.size]
+texts = recognizer(crops)
+print(f"{probe.name}: {len(quads)} boxes, {sum(bool(t) for t in texts)} transcribed")
+for quad, text in list(zip(quads, texts))[:5]:
+    print("  ", ",".join(map(str, clockwise_points(quad, *image.size))), text)
+assert any(texts), "recogniser returned nothing on a real test image\""""),
+
+    ("markdown", """## 4. Train the arms
+
+`stock` is `a1_stock.yaml` - YOLOv11s-OBB as shipped. `paper` is `full_legacy.yaml`,
 the deployed BiFPN + MS-CBAM + cross-attention model. Both get `nc=1`."""),
 
     ("code", """from rects_control.detectors import adopt_published, train
@@ -236,24 +266,24 @@ else:
     paper = adopt_published(PAPER_CKPT, Path(PROJECT), SEED)
 
 stock = train("stock", DATA_YAML, Path(PROJECT), SEED, DEVICE)
-assert paper and stock, "an arm failed to produce weights; see the traceback above"
-print("paper:", paper, "\\nstock:", stock)"""),
 
-    ("markdown", """## 4. Submissions
+# Do not raise here: a failed version saves no output, which would discard the arm
+# that succeeded along with the one that did not.
+arms = {name: w for name, w in (("paper", paper), ("stock", stock)) if w}
+for name in ("paper", "stock"):
+    print(f"{name}: {arms.get(name, 'FAILED - see the traceback above')}")"""),
+
+    ("markdown", """## 5. Submissions
 
 One `PaddleRecognizer` instance serves both arms, so any 1-NED difference is
 attributable to detection. Task 3 is written at three confidences because the
 detection operating point is a free parameter; Task 4 at the published 0.4."""),
 
-    ("code", """from rects_control.recognizer import PaddleRecognizer
-from rects_control.submission import write_task3, write_task4
+    ("code", """from rects_control.submission import write_task3, write_task4
 
-recognizer = PaddleRecognizer(REC_DIR)
 out = Path("/kaggle/working/submissions"); out.mkdir(exist_ok=True)
-arms = {"paper": paper, "stock": stock}
 summary = []
 
-from ultralytics import YOLO
 for arm, weights in arms.items():
     model = YOLO(str(weights))
     for conf in TASK3_CONFS:
@@ -274,7 +304,7 @@ print("\\nboxes written")
 for arm, task, conf, n in summary:
     print(f"  {arm:6s} {task} conf={conf} -> {n}")"""),
 
-    ("markdown", """## 5. Upload
+    ("markdown", """## 6. Upload
 
 Save Version, download `/kaggle/working/submissions/*.zip`, and submit each to the
 RRC ReCTS server — Task 3 for H-mean, Task 4 for 1-NED. The number the reviewer
