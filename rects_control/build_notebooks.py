@@ -48,7 +48,12 @@ EXPORT_DIR = "/kaggle/working/PP-OCRv5_rects_rec_infer"
 
 EPOCHS = 35          # as published
 BATCH_SIZE = 64
-GPUS = "0,1\""""),
+GPUS = "0,1"
+
+# Belt and braces: also publish the export as a standalone Kaggle Dataset.
+# Needs KAGGLE_USERNAME and KAGGLE_KEY as notebook secrets.
+PUBLISH_DATASET = False
+DATASET_SLUG = "rishiksaisanthosh/rects-ppocrv5-finetuned\""""),
 
     ("code", """!pip install -q gdown
 !git clone -q --branch """ + BRANCH + " " + REPO + """ /kaggle/working/repo
@@ -111,6 +116,37 @@ size_kb = Path(archive).stat().st_size // 1024
 print(archive, size_kb, "KB")
 if size_kb < 1000:
     print("WARNING: archive is much smaller than a PP-OCRv5 mobile export should be")"""),
+
+    ("markdown", """### Optional: publish it as a Kaggle Dataset
+
+The version output above is already permanent, and attaching it to notebook 2 is
+enough. A dataset is the stronger option: it is independent of this notebook, so
+editing or deleting the notebook cannot take the weights with it, and it is what you
+would pull from for the Space.
+
+Needs two notebook secrets - *Add-ons -> Secrets* - named `KAGGLE_USERNAME` and
+`KAGGLE_KEY`, then set `PUBLISH_DATASET = True` above. Without them this cell says so
+and moves on."""),
+
+    ("code", """import os, shutil, subprocess
+
+if PUBLISH_DATASET:
+    from kaggle_secrets import UserSecretsClient
+    secrets = UserSecretsClient()
+    os.environ["KAGGLE_USERNAME"] = secrets.get_secret("KAGGLE_USERNAME")
+    os.environ["KAGGLE_KEY"] = secrets.get_secret("KAGGLE_KEY")
+
+    # Publish the export inside a named folder so the attached path is the same
+    # shape as a notebook-output attachment, and notebook 2 finds either.
+    stage = Path("/kaggle/working/recognizer_dataset")
+    shutil.copytree(EXPORT_DIR, stage / Path(EXPORT_DIR).name, dirs_exist_ok=True)
+    subprocess.run(
+        ["python", "ablation/push_snapshot.py", "--dir", str(stage),
+         "--slug", DATASET_SLUG, "--message", "ReCTS fine-tuned PP-OCRv5 mobile rec"],
+        cwd="/kaggle/working/repo",
+    )
+else:
+    print("PUBLISH_DATASET is False; the version output is your only copy")"""),
 
     ("markdown", """### Does it actually read ReCTS text?
 
@@ -187,14 +223,19 @@ training run costs the session."""),
 
     ("code", """from pathlib import Path
 
-def locate(pattern, what):
-    hits = sorted(Path("/kaggle/input").glob(pattern))
-    if not hits:
-        raise FileNotFoundError(f"{what} not attached (looked for {pattern})")
-    return hits[0]
+def locate(what, *patterns):
+    # first match across the attached inputs; patterns are tried in order
+    for pattern in patterns:
+        hits = sorted(Path("/kaggle/input").glob(pattern))
+        if hits:
+            return hits[0]
+    raise FileNotFoundError(f"{what} not attached (looked for {' , '.join(patterns)})")
 
-REC_DIR = locate("**/PP-OCRv5_rects_rec_infer/inference.yml", "recogniser").parent
-PAPER_CKPT = locate("**/runs/obb/train3/weights/best.pt", "published ReCTS detector")
+# Accepts the recogniser as a notebook output or as a published dataset, flattened
+# or not, so the attachment style you chose in notebook 1 does not matter here.
+REC_DIR = locate("recogniser", "**/PP-OCRv5_rects_rec_infer/inference.yml",
+                 "**/inference.yml").parent
+PAPER_CKPT = locate("published ReCTS detector", "**/runs/obb/train3/weights/best.pt")
 print("recogniser:", REC_DIR)
 print("paper detector:", PAPER_CKPT)"""),
 
