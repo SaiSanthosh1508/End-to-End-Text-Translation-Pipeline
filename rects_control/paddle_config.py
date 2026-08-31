@@ -39,11 +39,21 @@ def build_dictionary(path: Path) -> int:
 
 def patch_training_config(
     config: Path, *, data_root: Path, dictionary: Path, pretrained: Path,
-    epochs: int, batch_size: int, workers: int = 2,
+    epochs: int, batch_size: int, save_model_dir: Path, workers: int = 2,
 ) -> None:
-    """Point the stock PP-OCRv5 mobile recipe at the ReCTS crops."""
+    """Point the stock PP-OCRv5 mobile recipe at the ReCTS crops.
+
+    ``save_model_dir`` must be absolute. The stock value is ``./output/...``, and a
+    relative path there cost a completed 12 h fine-tune: the checkpoints were written
+    somewhere the session snapshot did not capture, so the run finished and left
+    nothing behind.
+    """
+    if not save_model_dir.is_absolute():
+        raise ValueError(f"save_model_dir must be absolute, got {save_model_dir}")
+
     spec = yaml.safe_load(config.read_text())
 
+    spec["Global"]["save_model_dir"] = str(save_model_dir)
     spec["Global"]["pretrained_model"] = str(pretrained)
     spec["Global"]["character_dict_path"] = str(dictionary)
     spec["Global"]["epoch_num"] = epochs

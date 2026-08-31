@@ -10,7 +10,7 @@ from rects_control.paddle_config import patch_training_config, retarget_for_expo
 
 STOCK = {
     "Global": {"character_dict_path": "/gone/dict.txt", "epoch_num": 500,
-               "pretrained_model": None},
+               "pretrained_model": None, "save_model_dir": "./output/PP-OCRv5_mobile_rec"},
     "Train": {"dataset": {"data_dir": "/gone", "label_file_list": ["/gone/x.txt"]},
               "loader": {"num_workers": 8, "batch_size_per_card": 128},
               "sampler": {"first_bs": 128}},
@@ -39,12 +39,26 @@ def test_training_config_points_every_path_at_the_crops(tmp_path: Path) -> None:
     config = write_stock(tmp_path)
     patch_training_config(
         config, data_root=tmp_path / "rec", dictionary=tmp_path / "d.txt",
-        pretrained=tmp_path / "p.pdparams", epochs=35, batch_size=64,
+        pretrained=tmp_path / "p.pdparams", epochs=25, batch_size=64,
+        save_model_dir=tmp_path / "rec_output",
     )
 
     spec = yaml.safe_load(config.read_text())
-    assert spec["Global"]["epoch_num"] == 35
+    assert spec["Global"]["epoch_num"] == 25
+    assert spec["Global"]["save_model_dir"] == str(tmp_path / "rec_output")
     assert spec["Train"]["sampler"]["first_bs"] == 64
     assert spec["Eval"]["loader"]["batch_size_per_card"] == 64
     assert spec["Train"]["dataset"]["label_file_list"] == [str(tmp_path / "rec/rec_gt_train.txt")]
     assert spec["Eval"]["dataset"]["label_file_list"] == [str(tmp_path / "rec/rec_gt_test.txt")]
+
+
+def test_relative_save_dir_is_refused(tmp_path: Path) -> None:
+    """The stock ./output/... is what lost a finished 12 h run."""
+    import pytest
+
+    with pytest.raises(ValueError, match="must be absolute"):
+        patch_training_config(
+            write_stock(tmp_path), data_root=tmp_path, dictionary=tmp_path / "d.txt",
+            pretrained=tmp_path / "p.pdparams", epochs=25, batch_size=64,
+            save_model_dir=Path("./output/PP-OCRv5_mobile_rec"),
+        )

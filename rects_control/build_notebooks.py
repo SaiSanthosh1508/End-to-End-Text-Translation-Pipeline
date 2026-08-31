@@ -45,14 +45,19 @@ CONFIG = PADDLE_ROOT + "/configs/rec/PP-OCRv5/PP-OCRv5_mobile_rec.yml"
 DICTIONARY = PADDLE_ROOT + "/configs/rec/multi_language/custom_reCTS_dict.txt"
 PRETRAINED = PADDLE_ROOT + "/pretrained_models/PP-OCRv5_mobile_rec_pretrained.pdparams"
 EXPORT_DIR = "/kaggle/working/PP-OCRv5_rects_rec_infer"
+SAVE_MODEL_DIR = "/kaggle/working/rec_output"
 
-EPOCHS = 35          # as published
+# 98,253 crops at ~21 min/epoch on T4 x2. 35 epochs is ~12.2 h and does not fit
+# Kaggle's 12 h cap - that is what killed the first attempt at epoch 34. The first
+# run's log shows accuracy essentially flat from epoch 29 (0.748) to its best at 32
+# (0.760), so 25 epochs costs about a point and finishes with hours to spare.
+EPOCHS = 25
 BATCH_SIZE = 64
 GPUS = "0,1"
 
 # Belt and braces: also publish the export as a standalone Kaggle Dataset.
 # Needs KAGGLE_USERNAME and KAGGLE_KEY as notebook secrets.
-PUBLISH_DATASET = False
+PUBLISH_DATASET = True
 DATASET_SLUG = "rishiksaisanthosh/rects-ppocrv5-finetuned\""""),
 
     ("code", """!pip install -q gdown
@@ -86,21 +91,39 @@ n_chars = build_dictionary(Path(DICTIONARY))
 patch_training_config(
     Path(CONFIG), data_root=Path(DATA_ROOT), dictionary=Path(DICTIONARY),
     pretrained=Path(PRETRAINED), epochs=EPOCHS, batch_size=BATCH_SIZE,
+    save_model_dir=Path(SAVE_MODEL_DIR),
 )
 print(f"{n_chars} characters in the label space")"""),
 
     ("markdown", """## 3. Fine-tune
 
-~2 h on T4 x2. The eval accuracy printed at the end is the sanity check: PP-OCRv5
-mobile fine-tuned on ReCTS crops should land well above 0.7 on the held-out 10%."""),
+**~9 h on T4 x2.** Start it with a clear 12 h ahead of you.
+
+Checkpoints go to an absolute `SAVE_MODEL_DIR`. The stock config uses a relative
+`./output/...`, and that is what lost the first attempt: it trained for twelve hours,
+logged `save model in ./output/PP-OCRv5_mobile_rec/latest` every epoch, and none of it
+appeared in the session snapshot. Expect accuracy around 0.75 by epoch 25."""),
 
     ("code", """!python3 -m paddle.distributed.launch --gpus '{GPUS}' {PADDLE_ROOT}/tools/train.py \\
     -c {CONFIG} -o Global.pretrained_model={PRETRAINED}"""),
 
-    ("markdown", "## 4. Export for inference"),
+    ("markdown", """## 4. Export for inference
+
+Check the checkpoint is on disk before exporting. If this is empty the run produced
+nothing, and no amount of exporting will conjure it back."""),
+
+    ("code", """checkpoints = sorted(Path(SAVE_MODEL_DIR).rglob("*.pdparams"))
+for path in checkpoints:
+    print(f"{path}  {path.stat().st_size // 1024} KB")
+assert checkpoints, f"no checkpoint under {SAVE_MODEL_DIR} - training saved nothing"
+
+best = Path(SAVE_MODEL_DIR) / "best_model" / "model.pdparams"
+chosen = best if best.exists() else Path(SAVE_MODEL_DIR) / "latest.pdparams"
+CHOSEN_STEM = str(chosen.with_suffix(""))   # PaddleOCR appends .pdparams itself
+print("exporting from", CHOSEN_STEM)"""),
 
     ("code", """!python3 {PADDLE_ROOT}/tools/export_model.py -c {CONFIG} -o \\
-    Global.pretrained_model={PADDLE_ROOT}/output/PP-OCRv5_mobile_rec/best_model/model.pdparams \\
+    Global.pretrained_model={CHOSEN_STEM} \\
     Global.save_inference_dir={EXPORT_DIR}
 !ls -la {EXPORT_DIR}"""),
 
@@ -358,200 +381,6 @@ for deciding whether a given gap means anything."""),
 ]
 
 
-RECOVERY_CELLS: list[tuple[str, str]] = [
-    ("markdown", """# Recover the recogniser from the cancelled run
-
-The 35-epoch fine-tune reached epoch 34 and was cut off at Kaggle's 12 h session
-limit, 32 minutes from the end. Nothing needs retraining: PaddleOCR had already
-written `best_model` at epoch 32 (acc 0.760, norm-edit-dis 0.874), and epochs 33-35
-were not going to move that. This notebook exports that checkpoint and publishes it.
-
-**Attach one input:** *Add Input -> Notebook Output* -> the cancelled `rects` run.
-
-**No accelerator needed.** Set it to None; export is a CPU operation and this takes
-about ten minutes."""),
-
-    ("code", """EXPORT_DIR = "/kaggle/working/PP-OCRv5_rects_rec_infer"
-RECOVERED = "/kaggle/working/recovered"
-
-PUBLISH_DATASET = True
-DATASET_SLUG = "rishiksaisanthosh/rects-ppocrv5-finetuned\""""),
-
-    ("code", f"""!pip install -q paddlepaddle==3.2.0 -i https://www.paddlepaddle.org.cn/packages/stable/cpu/
-!git clone -q https://github.com/PaddlePaddle/PaddleOCR.git /kaggle/working/PaddleOCR
-!pip install -q -r /kaggle/working/PaddleOCR/requirements.txt
-!git clone -q --branch {BRANCH} {REPO} /kaggle/working/repo
-import sys; sys.path.insert(0, "/kaggle/working/repo")"""),
-
-    ("markdown", """## 1. What is actually attached?
-
-The previous attempt failed here with nothing under `/kaggle/input`, and could not
-say whether the input was missing or the checkpoint was. Inventory first, so the
-answer is in the log either way."""),
-
-    ("code", """from pathlib import Path
-
-INPUT = Path("/kaggle/input")
-roots = sorted(p for p in INPUT.glob("*")) if INPUT.exists() else []
-print(f"{len(roots)} input(s) attached:", [p.name for p in roots])
-
-for root in roots:
-    entries = sorted(root.rglob("*"))
-    print(f"\\n{root.name}: {len(entries)} entries")
-    for entry in entries[:25]:
-        marker = "/" if entry.is_dir() else f"  {entry.stat().st_size // 1024} KB"
-        print("   ", entry.relative_to(root), marker)
-    if len(entries) > 25:
-        print(f"    ... and {len(entries) - 25} more")
-
-if not roots:
-    raise RuntimeError(
-        "Nothing is attached. Add Input -> Notebook Output -> the cancelled 'rects' "
-        "run, wait for it to finish mounting, then re-run."
-    )"""),
-
-    ("markdown", """## 2. Unpack whatever shape it arrived in
-
-Kaggle stores a session as a single `_output_.zip` but usually presents an attached
-notebook output extracted. Handle both."""),
-
-    ("code", """import zipfile
-
-WANTED = ("/best_model/", "/latest", "custom_reCTS_dict.txt", "rec_gt_test.txt")
-RECOVERED_DIR = Path(RECOVERED)
-
-archives = sorted(INPUT.glob("**/*.zip"))
-print("archives found:", [a.name for a in archives])
-
-for archive in archives:
-    with zipfile.ZipFile(archive) as bundle:
-        members = [m for m in bundle.namelist()
-                   if any(w in m for w in WANTED) or m.endswith("PP-OCRv5_mobile_rec.yml")]
-        print(f"{archive.name}: {len(bundle.namelist())} members, {len(members)} wanted")
-        RECOVERED_DIR.mkdir(parents=True, exist_ok=True)
-        bundle.extractall(RECOVERED_DIR, members=members)
-
-search_roots = ([RECOVERED_DIR] if RECOVERED_DIR.exists() else []) + roots
-print("searching:", [str(r) for r in search_roots])"""),
-
-    ("code", """CHECKPOINT_PATTERNS = (
-    "**/best_model/model.pdparams",     # what PaddleOCR writes on a new best epoch
-    "**/best_accuracy.pdparams",
-    "**/latest.pdparams",               # end-of-epoch snapshot, equivalent here
-    "**/*.pdparams",
-)
-
-def find(what, *patterns, required=True):
-    for root in search_roots:
-        for pattern in patterns:
-            hits = sorted(root.glob(pattern))
-            if hits:
-                return hits[0]
-    if not required:
-        return None
-    listing = "\\n".join(f"    {p}" for root in search_roots
-                         for p in sorted(root.rglob("*"))[:60])
-    raise FileNotFoundError(f"{what} not found. Patterns: {patterns}\\nSaw:\\n{listing}")
-
-CHECKPOINT = find("training checkpoint", *CHECKPOINT_PATTERNS)
-CONFIG_SRC = find("training config", "**/PP-OCRv5_mobile_rec.yml", "**/*mobile_rec.yml")
-DICT_SRC = find("character dictionary", "**/custom_reCTS_dict.txt", required=False)
-
-for label, path in (("checkpoint", CHECKPOINT), ("config", CONFIG_SRC), ("dictionary", DICT_SRC)):
-    print(f"{label:11s} {path}" + (f"  ({path.stat().st_size // 1024} KB)" if path else ""))
-if DICT_SRC:
-    print("dictionary entries:", len(DICT_SRC.read_text(encoding="utf-8").splitlines()))
-else:
-    print("dictionary not recovered; it will be rebuilt from the same sources")"""),
-
-    ("markdown", """## 3. Export
-
-The recovered config still names the old session's paths, and the only one export
-actually reads is the dictionary - get it wrong and the model's output indices mean
-nothing. `Global.pretrained_model` takes the checkpoint stem: PaddleOCR appends
-`.pdparams` itself."""),
-
-    ("code", """import shutil
-from rects_control.paddle_config import build_dictionary, retarget_for_export
-
-work = Path("/kaggle/working/export"); work.mkdir(exist_ok=True)
-config = work / "PP-OCRv5_mobile_rec.yml"
-dictionary = work / "custom_reCTS_dict.txt"
-shutil.copyfile(CONFIG_SRC, config)
-
-if DICT_SRC:
-    shutil.copyfile(DICT_SRC, dictionary)
-else:
-    # Deterministic given the same sources, so a rebuild reproduces the label space
-    # the checkpoint was trained against. The count must match the training log.
-    print(build_dictionary(dictionary), "characters rebuilt (training log said 6711)")
-retarget_for_export(config, dictionary)
-
-stem = str(CHECKPOINT.with_suffix(""))
-print(subprocess.run(
-    ["python3", "/kaggle/working/PaddleOCR/tools/export_model.py", "-c", str(config),
-     "-o", f"Global.pretrained_model={stem}", f"Global.save_inference_dir={EXPORT_DIR}"],
-    capture_output=True, text=True).stdout[-2500:])
-print(sorted(p.name for p in Path(EXPORT_DIR).iterdir()))"""),
-
-    ("markdown", """## 4. Persist before checking
-
-Same rule as before: a raising cell saves no output, so the weights are secured
-first and nothing below is allowed to raise."""),
-
-    ("code", """archive = shutil.make_archive("/kaggle/working/rects_rec_finetuned", "zip", EXPORT_DIR)
-size_kb = Path(archive).stat().st_size // 1024
-print(archive, size_kb, "KB")
-if size_kb < 1000:
-    print("WARNING: much smaller than a PP-OCRv5 mobile export should be")"""),
-
-    ("code", """import os
-
-if PUBLISH_DATASET:
-    from kaggle_secrets import UserSecretsClient
-    secrets = UserSecretsClient()
-    os.environ["KAGGLE_USERNAME"] = secrets.get_secret("KAGGLE_USERNAME")
-    os.environ["KAGGLE_KEY"] = secrets.get_secret("KAGGLE_KEY")
-
-    stage = Path("/kaggle/working/recognizer_dataset")
-    shutil.copytree(EXPORT_DIR, stage / Path(EXPORT_DIR).name, dirs_exist_ok=True)
-    subprocess.run(
-        ["python", "ablation/push_snapshot.py", "--dir", str(stage),
-         "--slug", DATASET_SLUG, "--message", "ReCTS fine-tuned PP-OCRv5 mobile rec, epoch 32"],
-        cwd="/kaggle/working/repo",
-    )
-else:
-    print("PUBLISH_DATASET is False; the version output is your only copy")"""),
-
-    ("markdown", """### Does it read ReCTS text?
-
-Held-out crops with known ground truth, recovered from the same run. Reports; does
-not raise."""),
-
-    ("code", """try:
-    import cv2
-    from rects_control.recognizer import PaddleRecognizer
-
-    labels = find("**/rec_gt_test.txt", "held-out labels")
-    rows = labels.read_text(encoding="utf-8").splitlines()
-    crops_root = labels.parent
-    sample = [r.split(chr(9)) for r in rows[:200]]
-    usable = [(crops_root / rel, text) for rel, text in sample if (crops_root / rel).exists()][:12]
-
-    predicted = PaddleRecognizer(Path(EXPORT_DIR))([cv2.imread(str(p)) for p, _ in usable])
-    hits = sum(p == t for p, (_, t) in zip(predicted, usable))
-    for p, (_, t) in zip(predicted, usable):
-        print(f"{'ok ' if p == t else '   '} pred={p!r:20s} gt={t!r}")
-    print(f"\\n{hits}/{len(usable)} exact - expect roughly 8/12 at acc 0.76")
-except Exception as error:
-    print(f"self-test could not run: {error!r}")
-    print("The export is already archived above; this does not affect it.")"""),
-
-    ("markdown", """**Save Version -> Save & Run All**, then go straight to the control
-notebook and attach either this notebook's output or the published dataset."""),
-]
-
-
 def notebook(cells: list[tuple[str, str]]) -> dict[str, object]:
     return {
         "cells": [
@@ -578,7 +407,6 @@ if __name__ == "__main__":
     for name, cells in (
         ("rects_recognizer_kaggle.ipynb", RECOGNIZER_CELLS),
         ("rects_control_kaggle.ipynb", CONTROL_CELLS),
-        ("rects_export_kaggle.ipynb", RECOVERY_CELLS),
     ):
         (here / name).write_text(json.dumps(notebook(cells), indent=1), encoding="utf-8")
         print(f"wrote {name}  ({len(cells)} cells)")
