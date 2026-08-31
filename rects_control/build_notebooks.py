@@ -60,9 +60,25 @@ GPUS = "0,1"
 PUBLISH_DATASET = True
 DATASET_SLUG = "rishiksaisanthosh/rects-ppocrv5-finetuned\""""),
 
-    ("code", """!pip install -q gdown
-!git clone -q --branch """ + BRANCH + " " + REPO + """ /kaggle/working/repo
+    ("markdown", """## 0. Install first, and prove it worked
+
+The paddle wheel comes from a CDN that intermittently times out. Last attempt it did:
+training never started, and the failure only surfaced eleven minutes later as
+"training saved nothing". Installing and importing it up front makes a bad CDN day
+cost two minutes and say so plainly."""),
+
+    ("code", f"""!pip install -q gdown
+!git clone -q --branch {BRANCH} {REPO} /kaggle/working/repo
+!pip install -q --timeout 180 --retries 10 paddlepaddle-gpu==3.2.0 -i https://www.paddlepaddle.org.cn/packages/stable/cu118/ || pip install -q --timeout 180 --retries 10 paddlepaddle-gpu
 import sys; sys.path.insert(0, "/kaggle/working/repo")"""),
+
+    ("code", """import paddle
+
+print("paddle", paddle.__version__, "| GPUs visible:", paddle.device.cuda.device_count())
+assert paddle.device.cuda.device_count() >= 2, (
+    "need two GPUs - training launches with --gpus '0,1'. "
+    "Set Accelerator to GPU T4 x2 and re-run."
+)"""),
 
     ("markdown", "## 1. ReCTS training images and line annotations"),
 
@@ -80,7 +96,6 @@ assert train_n > 10_000, "far fewer crops than expected - check the unzipped lay
     ("markdown", "## 2. PaddleOCR and the PP-OCRv5 mobile checkpoint"),
 
     ("code", """!git clone -q https://github.com/PaddlePaddle/PaddleOCR.git {PADDLE_ROOT}
-!pip install -q paddlepaddle-gpu==3.2.0 -i https://www.paddlepaddle.org.cn/packages/stable/cu118/
 !pip install -q -r {PADDLE_ROOT}/requirements.txt
 !pip install -q lmdb rapidfuzz
 !wget -q -P {PADDLE_ROOT}/pretrained_models https://paddle-model-ecology.bj.bcebos.com/paddlex/official_pretrained_model/PP-OCRv5_mobile_rec_pretrained.pdparams"""),
@@ -234,7 +249,7 @@ TASK4_CONFS = (0.4,)
 DEVICE = "0,1\""""),
 
     ("code", """!pip install -q gdown "ultralytics==8.3.189"
-!pip install -q paddlepaddle-gpu==3.2.0 -i https://www.paddlepaddle.org.cn/packages/stable/cu118/
+!pip install -q --timeout 180 --retries 10 paddlepaddle-gpu==3.2.0 -i https://www.paddlepaddle.org.cn/packages/stable/cu118/ || pip install -q --timeout 180 --retries 10 paddlepaddle-gpu
 !pip install -q paddleocr
 !git clone -q --branch """ + BRANCH + " " + REPO + """ /kaggle/working/repo
 import sys; sys.path.insert(0, "/kaggle/working/repo")"""),
