@@ -56,3 +56,16 @@ def patch_training_config(
     spec["Train"]["sampler"]["first_bs"] = batch_size
 
     config.write_text(yaml.dump(spec, default_flow_style=False, allow_unicode=True))
+
+
+def retarget_for_export(config: Path, dictionary: Path) -> None:
+    """Repoint a recovered training config at paths that exist in this session.
+
+    A config recovered from a finished run still names that run's ``/kaggle/working``
+    paths. Export only reads the architecture and the label space, so the dictionary
+    is the one path that has to be corrected; leaving it stale produces a model whose
+    output indices mean nothing.
+    """
+    spec = yaml.safe_load(config.read_text())
+    spec["Global"]["character_dict_path"] = str(dictionary)
+    config.write_text(yaml.dump(spec, default_flow_style=False, allow_unicode=True))
