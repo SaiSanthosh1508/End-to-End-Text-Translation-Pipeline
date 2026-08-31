@@ -383,43 +383,88 @@ DATASET_SLUG = "rishiksaisanthosh/rects-ppocrv5-finetuned\""""),
 !git clone -q --branch {BRANCH} {REPO} /kaggle/working/repo
 import sys; sys.path.insert(0, "/kaggle/working/repo")"""),
 
-    ("markdown", """## 1. Unpack whatever shape the attached output arrived in
+    ("markdown", """## 1. What is actually attached?
 
-Kaggle stores a session's files as a single `_output_.zip`, but presents an attached
-notebook output extracted. Handle both rather than guess."""),
+The previous attempt failed here with nothing under `/kaggle/input`, and could not
+say whether the input was missing or the checkpoint was. Inventory first, so the
+answer is in the log either way."""),
 
-    ("code", """import subprocess, zipfile
-from pathlib import Path
+    ("code", """from pathlib import Path
 
-archives = list(Path("/kaggle/input").glob("**/_output_.zip"))
-if archives:
-    print(f"extracting {archives[0]} ...")
-    Path(RECOVERED).mkdir(parents=True, exist_ok=True)
-    with zipfile.ZipFile(archives[0]) as bundle:
+INPUT = Path("/kaggle/input")
+roots = sorted(p for p in INPUT.glob("*")) if INPUT.exists() else []
+print(f"{len(roots)} input(s) attached:", [p.name for p in roots])
+
+for root in roots:
+    entries = sorted(root.rglob("*"))
+    print(f"\\n{root.name}: {len(entries)} entries")
+    for entry in entries[:25]:
+        marker = "/" if entry.is_dir() else f"  {entry.stat().st_size // 1024} KB"
+        print("   ", entry.relative_to(root), marker)
+    if len(entries) > 25:
+        print(f"    ... and {len(entries) - 25} more")
+
+if not roots:
+    raise RuntimeError(
+        "Nothing is attached. Add Input -> Notebook Output -> the cancelled 'rects' "
+        "run, wait for it to finish mounting, then re-run."
+    )"""),
+
+    ("markdown", """## 2. Unpack whatever shape it arrived in
+
+Kaggle stores a session as a single `_output_.zip` but usually presents an attached
+notebook output extracted. Handle both."""),
+
+    ("code", """import zipfile
+
+WANTED = ("/best_model/", "/latest", "custom_reCTS_dict.txt", "rec_gt_test.txt")
+RECOVERED_DIR = Path(RECOVERED)
+
+archives = sorted(INPUT.glob("**/*.zip"))
+print("archives found:", [a.name for a in archives])
+
+for archive in archives:
+    with zipfile.ZipFile(archive) as bundle:
         members = [m for m in bundle.namelist()
-                   if "/best_model/" in m or m.endswith((".yml", "custom_reCTS_dict.txt"))
-                   or "/rec/test/" in m or m.endswith("rec_gt_test.txt")]
-        bundle.extractall(RECOVERED, members=members)
-    search_root = Path(RECOVERED)
-else:
-    search_root = Path("/kaggle/input")
-print("searching under", search_root)"""),
+                   if any(w in m for w in WANTED) or m.endswith("PP-OCRv5_mobile_rec.yml")]
+        print(f"{archive.name}: {len(bundle.namelist())} members, {len(members)} wanted")
+        RECOVERED_DIR.mkdir(parents=True, exist_ok=True)
+        bundle.extractall(RECOVERED_DIR, members=members)
 
-    ("code", """def find(pattern, what):
-    hits = sorted(search_root.glob(pattern))
-    if not hits:
-        raise FileNotFoundError(f"{what} not found (looked for {pattern})")
-    return hits[0]
+search_roots = ([RECOVERED_DIR] if RECOVERED_DIR.exists() else []) + roots
+print("searching:", [str(r) for r in search_roots])"""),
 
-CHECKPOINT = find("**/best_model/model.pdparams", "epoch-32 checkpoint")
-CONFIG_SRC = find("**/configs/rec/PP-OCRv5/PP-OCRv5_mobile_rec.yml", "training config")
-DICT_SRC = find("**/custom_reCTS_dict.txt", "character dictionary")
+    ("code", """CHECKPOINT_PATTERNS = (
+    "**/best_model/model.pdparams",     # what PaddleOCR writes on a new best epoch
+    "**/best_accuracy.pdparams",
+    "**/latest.pdparams",               # end-of-epoch snapshot, equivalent here
+    "**/*.pdparams",
+)
+
+def find(what, *patterns, required=True):
+    for root in search_roots:
+        for pattern in patterns:
+            hits = sorted(root.glob(pattern))
+            if hits:
+                return hits[0]
+    if not required:
+        return None
+    listing = "\\n".join(f"    {p}" for root in search_roots
+                         for p in sorted(root.rglob("*"))[:60])
+    raise FileNotFoundError(f"{what} not found. Patterns: {patterns}\\nSaw:\\n{listing}")
+
+CHECKPOINT = find("training checkpoint", *CHECKPOINT_PATTERNS)
+CONFIG_SRC = find("training config", "**/PP-OCRv5_mobile_rec.yml", "**/*mobile_rec.yml")
+DICT_SRC = find("character dictionary", "**/custom_reCTS_dict.txt", required=False)
 
 for label, path in (("checkpoint", CHECKPOINT), ("config", CONFIG_SRC), ("dictionary", DICT_SRC)):
-    print(f"{label:11s} {path}  ({path.stat().st_size // 1024} KB)")
-print("dictionary entries:", len(DICT_SRC.read_text(encoding="utf-8").splitlines()))"""),
+    print(f"{label:11s} {path}" + (f"  ({path.stat().st_size // 1024} KB)" if path else ""))
+if DICT_SRC:
+    print("dictionary entries:", len(DICT_SRC.read_text(encoding="utf-8").splitlines()))
+else:
+    print("dictionary not recovered; it will be rebuilt from the same sources")"""),
 
-    ("markdown", """## 2. Export
+    ("markdown", """## 3. Export
 
 The recovered config still names the old session's paths, and the only one export
 actually reads is the dictionary - get it wrong and the model's output indices mean
@@ -427,13 +472,19 @@ nothing. `Global.pretrained_model` takes the checkpoint stem: PaddleOCR appends
 `.pdparams` itself."""),
 
     ("code", """import shutil
-from rects_control.paddle_config import retarget_for_export
+from rects_control.paddle_config import build_dictionary, retarget_for_export
 
 work = Path("/kaggle/working/export"); work.mkdir(exist_ok=True)
 config = work / "PP-OCRv5_mobile_rec.yml"
 dictionary = work / "custom_reCTS_dict.txt"
 shutil.copyfile(CONFIG_SRC, config)
-shutil.copyfile(DICT_SRC, dictionary)
+
+if DICT_SRC:
+    shutil.copyfile(DICT_SRC, dictionary)
+else:
+    # Deterministic given the same sources, so a rebuild reproduces the label space
+    # the checkpoint was trained against. The count must match the training log.
+    print(build_dictionary(dictionary), "characters rebuilt (training log said 6711)")
 retarget_for_export(config, dictionary)
 
 stem = str(CHECKPOINT.with_suffix(""))
@@ -443,7 +494,7 @@ print(subprocess.run(
     capture_output=True, text=True).stdout[-2500:])
 print(sorted(p.name for p in Path(EXPORT_DIR).iterdir()))"""),
 
-    ("markdown", """## 3. Persist before checking
+    ("markdown", """## 4. Persist before checking
 
 Same rule as before: a raising cell saves no output, so the weights are secured
 first and nothing below is allowed to raise."""),
