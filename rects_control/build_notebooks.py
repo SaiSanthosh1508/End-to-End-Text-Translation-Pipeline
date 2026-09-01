@@ -261,16 +261,41 @@ training run costs the session."""),
 
     ("code", """from pathlib import Path
 
-def locate(what, *patterns):
-    # first match across the attached inputs; patterns are tried in order
-    for pattern in patterns:
-        hits = sorted(Path("/kaggle/input").glob(pattern))
-        if hits:
-            return hits[0]
-    raise FileNotFoundError(f"{what} not attached (looked for {' , '.join(patterns)})")
+INPUT = Path("/kaggle/input")
+roots = sorted(INPUT.glob("*")) if INPUT.exists() else []
+print(f"{len(roots)} input(s):", [p.name for p in roots])
+for root in roots:
+    entries = sorted(root.rglob("*"))[:12]
+    print(f"  {root.name}:", [str(e.relative_to(root)) for e in entries] or "EMPTY")
+if not roots:
+    raise RuntimeError("Nothing attached. Add the recogniser notebook output and yolo-obb-rects.")
 
-# Accepts the recogniser as a notebook output or as a published dataset, flattened
-# or not, so the attachment style you chose in notebook 1 does not matter here.
+# A large notebook output arrives as _output_.zip rather than extracted files, which is
+# how the previous attempt found nothing. Pull just the recogniser out of it; random
+# access means the 9 GB around it is never read.
+import zipfile
+
+STAGED = Path("/kaggle/working/staged_recognizer")
+for archive in sorted(INPUT.glob("**/*.zip")):
+    with zipfile.ZipFile(archive) as bundle:
+        members = [m for m in bundle.namelist()
+                   if "PP-OCRv5_rects_rec_infer/" in m and not m.endswith("/")]
+        if members:
+            print(f"extracting {len(members)} file(s) from {archive.name}")
+            bundle.extractall(STAGED, members=members)
+            break
+
+SEARCH = ([STAGED] if STAGED.exists() else []) + roots
+
+def locate(what, *patterns):
+    for root in SEARCH:
+        for pattern in patterns:
+            hits = sorted(root.glob(pattern))
+            if hits:
+                return hits[0]
+    seen = chr(10).join(f"    {p}" for root in SEARCH for p in sorted(root.rglob("*"))[:50])
+    raise FileNotFoundError(f"{what} not found. Tried {patterns}, saw:{chr(10)}{seen}")
+
 REC_DIR = locate("recogniser", "**/PP-OCRv5_rects_rec_infer/inference.yml",
                  "**/inference.yml").parent
 PAPER_CKPT = locate("published ReCTS detector", "**/runs/obb/train3/weights/best.pt")
