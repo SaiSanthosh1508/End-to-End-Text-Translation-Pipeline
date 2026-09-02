@@ -259,12 +259,24 @@ REC_DEVICE = "cpu"     # see the install cell: paddle GPU breaks torch here"""),
 !git clone -q --branch """ + BRANCH + " " + REPO + """ /kaggle/working/repo
 import sys; sys.path.insert(0, "/kaggle/working/repo")"""),
 
+    ("markdown", """### Register the custom attention modules
+
+`best.pt` pickles `CrossAttentionBlock` and `MultiScaleCBAM` under
+`ultralytics.nn.modules.block`, so stock Ultralytics cannot unpickle it and the
+paper arm's config cannot be built. `install_modules.py` patches a clean 8.3.189
+install; it has to run before anything imports ultralytics, because patching
+site-packages does not affect a module already loaded in this process."""),
+
+    ("code", """!cd /kaggle/working/repo && python ablation/install_modules.py"""),
+
     ("code", """import paddle
 import torch
 from ultralytics import YOLO
+from ultralytics.nn.modules.block import CrossAttentionBlock, MultiScaleCBAM
 from paddleocr import TextRecognition
 
 print("torch", torch.__version__, "| CUDA:", torch.cuda.device_count(), "GPU(s)")
+print("custom modules registered:", CrossAttentionBlock.__name__, MultiScaleCBAM.__name__)
 print("paddle", paddle.__version__, "| running recognition on", REC_DEVICE)
 assert torch.cuda.device_count() >= 2, "need GPU T4 x2 for the detector arms\""""),
 
