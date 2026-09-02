@@ -272,12 +272,19 @@ site-packages does not affect a module already loaded in this process."""),
     ("code", """import paddle
 import torch
 from ultralytics import YOLO
-from ultralytics.nn.modules.block import CrossAttentionBlock, MultiScaleCBAM
 from paddleocr import TextRecognition
 
+# install_modules.py puts the custom classes in ultralytics.nn.modules.custom, but
+# best.pt pickles them under ...modules.block. Aliasing is what makes the checkpoint
+# loadable; importing from block afterwards proves both halves worked.
+from rects_control.detectors import register_pickle_aliases
+
+register_pickle_aliases()
+from ultralytics.nn.modules.block import CrossAttentionBlock, MultiScaleCBAM
+
 print("torch", torch.__version__, "| CUDA:", torch.cuda.device_count(), "GPU(s)")
-print("custom modules registered:", CrossAttentionBlock.__name__, MultiScaleCBAM.__name__)
 print("paddle", paddle.__version__, "| running recognition on", REC_DEVICE)
+print("custom modules aliased:", CrossAttentionBlock.__name__, MultiScaleCBAM.__name__)
 assert torch.cuda.device_count() >= 2, "need GPU T4 x2 for the detector arms\""""),
 
     ("markdown", """## 1. Locate the recogniser and the published detector

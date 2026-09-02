@@ -33,6 +33,21 @@ TRAIN_ARGS = {
 }
 
 
+def register_pickle_aliases() -> None:
+    """Expose the custom modules where the published checkpoint expects them.
+
+    ``best.pt`` pickles class references by their original import path,
+    ``ultralytics.nn.modules.block``, whereas install_modules.py places them in
+    ``...modules.custom``. Without the aliases torch.load raises AttributeError.
+    """
+    import ultralytics.nn.modules.block as block
+    from ultralytics.nn.modules import custom
+
+    for name in custom.__all__:
+        if not hasattr(block, name):
+            setattr(block, name, getattr(custom, name))
+
+
 def arm_config(arm: str, out_dir: Path) -> Path:
     """Copy an ablation config with ``nc`` set for ReCTS's single text class."""
     if arm not in ARMS:
