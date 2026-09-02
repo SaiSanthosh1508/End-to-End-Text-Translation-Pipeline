@@ -246,13 +246,27 @@ TRAIN_PAPER_ARM = False
 
 TASK3_CONFS = (0.3, 0.4, 0.5)
 TASK4_CONFS = (0.4,)
-DEVICE = "0,1\""""),
+DEVICE = "0,1"
+REC_DEVICE = "cpu"     # see the install cell: paddle GPU breaks torch here"""),
 
     ("code", """!pip install -q gdown "ultralytics==8.3.189"
-!pip install -q --timeout 180 --retries 10 paddlepaddle-gpu==3.2.0 -i https://www.paddlepaddle.org.cn/packages/stable/cu118/ || pip install -q --timeout 180 --retries 10 paddlepaddle-gpu
+# CPU paddle on purpose. paddlepaddle-gpu installs its own nvidia-* wheels, which
+# replace the NCCL that Kaggle's torch was built against, so `import ultralytics`
+# then dies with "undefined symbol: ncclCommShrink". Recognition is the cheap half
+# of this notebook; ~1 h on CPU beats fighting two CUDA stacks in one environment.
+!pip install -q --timeout 180 --retries 10 paddlepaddle==3.2.0
 !pip install -q paddleocr
 !git clone -q --branch """ + BRANCH + " " + REPO + """ /kaggle/working/repo
 import sys; sys.path.insert(0, "/kaggle/working/repo")"""),
+
+    ("code", """import paddle
+import torch
+from ultralytics import YOLO
+from paddleocr import TextRecognition
+
+print("torch", torch.__version__, "| CUDA:", torch.cuda.device_count(), "GPU(s)")
+print("paddle", paddle.__version__, "| running recognition on", REC_DEVICE)
+assert torch.cuda.device_count() >= 2, "need GPU T4 x2 for the detector arms\""""),
 
     ("markdown", """## 1. Locate the recogniser and the published detector
 
@@ -345,7 +359,7 @@ from ultralytics import YOLO
 from rects_control.recognizer import PaddleRecognizer
 from rects_control.submission import clockwise_points, crop_bgr, detect, image_files
 
-recognizer = PaddleRecognizer(REC_DIR)
+recognizer = PaddleRecognizer(REC_DIR, device=REC_DEVICE)
 probe = image_files(Path("/kaggle/working"))[0]
 image = Image.open(probe)
 quads = detect(YOLO(str(PAPER_CKPT)), image, 0.4)
