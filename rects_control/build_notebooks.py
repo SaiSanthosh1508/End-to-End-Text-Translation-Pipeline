@@ -454,6 +454,140 @@ for deciding whether a given gap means anything."""),
 ]
 
 
+SWEEP_CELLS: list[tuple[str, str]] = [
+    ("markdown", """# ReCTS Task 4 confidence sweep
+
+The control ran Task 4 at conf 0.4 and scored 1-NED 66.06 (paper) against 64.11
+(stock). The paper reports 0.8566, and the Task 3 sweep shows why the two are not
+comparable: published precision/recall of 92.69/81.7 sits just beyond conf 0.5 on
+the measured curve, so the original submission was made at a higher threshold.
+
+    conf 0.3   R 89.29  P 80.55  H 84.70
+    conf 0.4   R 87.61  P 85.73  H 86.66
+    conf 0.5   R 85.22  P 89.54  H 87.32
+    paper      R 81.70  P 92.69  H 86.85
+
+This notebook re-runs Task 4 at 0.5 and 0.6 for both arms. Nothing is retrained:
+both detectors and the recogniser come from the control run's saved output, so it
+is detection plus CPU recognition only, about 20 minutes per pass.
+
+**Attach one input:** *Add Input -> Notebook Output* -> the finished control run.
+
+**Accelerator: GPU T4 x2.** Detection uses the GPU; recognition stays on CPU for the
+same reason as before."""),
+
+    ("code", """SEED = 42
+CONFS = (0.5, 0.6)
+REC_DEVICE = "cpu"
+OUT = "/kaggle/working/submissions\""""),
+
+    ("code", """!pip install -q "ultralytics==8.3.189"
+!pip install -q --timeout 180 --retries 10 paddlepaddle==3.2.0
+!pip install -q paddleocr
+!git clone -q --branch """ + BRANCH + " " + REPO + """ /kaggle/working/repo
+import sys; sys.path.insert(0, "/kaggle/working/repo")"""),
+
+    ("code", """!cd /kaggle/working/repo && python ablation/install_modules.py"""),
+
+    ("code", """import torch
+from ultralytics import YOLO
+from rects_control.detectors import register_pickle_aliases
+
+register_pickle_aliases()
+from ultralytics.nn.modules.block import CrossAttentionBlock, MultiScaleCBAM
+print("torch", torch.__version__, "| CUDA:", torch.cuda.device_count(), "GPU(s)")"""),
+
+    ("markdown", """## 1. Recover both detectors, the recogniser and the test images
+
+All four come out of the control run's output. The test images are needed too - the
+submissions are regenerated from them, not from cached detections."""),
+
+    ("code", """import zipfile
+from pathlib import Path
+
+INPUT = Path("/kaggle/input")
+roots = sorted(INPUT.glob("*"))
+print(f"{len(roots)} input(s):", [p.name for p in roots])
+
+STAGED = Path("/kaggle/working/staged")
+WANTED = ("PP-OCRv5_rects_rec_infer/", "paper_seed42/weights/best.pt",
+          "stock_seed42/weights/best.pt", "Task3_and_Task4/img/", "task3_and_task4/img/")
+for archive in sorted(INPUT.glob("**/*.zip")):
+    with zipfile.ZipFile(archive) as bundle:
+        members = [m for m in bundle.namelist()
+                   if any(w in m for w in WANTED) and not m.endswith("/")]
+        if members:
+            print(f"extracting {len(members)} file(s) from {archive.name}")
+            bundle.extractall(STAGED, members=members)
+
+SEARCH = ([STAGED] if STAGED.exists() else []) + roots
+
+def locate(what, *patterns):
+    for root in SEARCH:
+        for pattern in patterns:
+            hits = sorted(root.glob(pattern))
+            if hits:
+                return hits[0]
+    seen = chr(10).join(f"    {p}" for r in SEARCH for p in sorted(r.rglob("*"))[:40])
+    raise FileNotFoundError(f"{what} not found. Tried {patterns}, saw:{chr(10)}{seen}")
+
+REC_DIR = locate("recogniser", "**/PP-OCRv5_rects_rec_infer/inference.yml").parent
+ARMS = {arm: locate(f"{arm} detector", f"**/{arm}_seed{SEED}/weights/best.pt")
+        for arm in ("paper", "stock")}
+# image_files() joins "ReCTS_test_part<n>/..." onto the root, so the root is three
+# levels above the image, not two.
+TEST_ROOT = locate("ReCTS test images", "**/Task3_and_Task4/img/*.jpg",
+                   "**/task3_and_task4/img/*.jpg").parents[3]
+print("recogniser:", REC_DIR)
+for arm, path in ARMS.items():
+    print(f"{arm}:", path)
+print("test root:", TEST_ROOT)"""),
+
+    ("code", """from rects_control.submission import image_files
+n = len(image_files(TEST_ROOT))
+print(f"{n} test images")
+assert n == 5000, f"expected the full 5000-image ReCTS test set, found {n}\""""),
+
+    ("markdown", """## 2. Regenerate Task 4
+
+Both arms are read by one recogniser instance at each threshold, so the comparison
+stays paired. Task 3 is written alongside at the same thresholds, which gives the
+detection-only numbers at the operating point the paper reports."""),
+
+    ("code", """from rects_control.recognizer import PaddleRecognizer
+from rects_control.submission import write_task3, write_task4
+
+recognizer = PaddleRecognizer(REC_DIR, device=REC_DEVICE)
+out = Path(OUT); out.mkdir(exist_ok=True)
+summary = []
+
+for arm, weights in ARMS.items():
+    model = YOLO(str(weights))
+    for conf in CONFS:
+        f3 = out / f"task3_{arm}_seed{SEED}_conf{conf:.1f}.txt"
+        summary.append((arm, "task3", conf, write_task3(model, TEST_ROOT, f3, conf)))
+        print(summary[-1], flush=True)
+        f4 = out / f"task4_{arm}_seed{SEED}_conf{conf:.1f}.txt"
+        summary.append((arm, "task4", conf, write_task4(model, recognizer, TEST_ROOT, f4, conf)))
+        print(summary[-1], flush=True)"""),
+
+    ("code", """for f in sorted(out.glob("*.txt")):
+    print(f"{f.name}  {f.stat().st_size // 1024} KB")
+print()
+for arm, task, conf, boxes in summary:
+    print(f"  {arm:6s} {task} conf={conf} -> {boxes} boxes")"""),
+
+    ("markdown", """## 3. Upload
+
+The `.txt` files upload directly - RRC rejects zips for these tasks. Submit each
+`task4_*` to Task 4 and each `task3_*` to Task 3, naming them by arm and threshold.
+
+The two numbers that matter: `task4_paper` against `task4_stock` at the same
+threshold, which is the control, and whether `task4_paper` approaches the published
+0.8566 at conf 0.6, which is the reproducibility question."""),
+]
+
+
 def notebook(cells: list[tuple[str, str]]) -> dict[str, object]:
     return {
         "cells": [
@@ -480,6 +614,7 @@ if __name__ == "__main__":
     for name, cells in (
         ("rects_recognizer_kaggle.ipynb", RECOGNIZER_CELLS),
         ("rects_control_kaggle.ipynb", CONTROL_CELLS),
+        ("rects_sweep_kaggle.ipynb", SWEEP_CELLS),
     ):
         (here / name).write_text(json.dumps(notebook(cells), indent=1), encoding="utf-8")
         print(f"wrote {name}  ({len(cells)} cells)")
