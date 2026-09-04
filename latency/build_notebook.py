@@ -117,19 +117,45 @@ import numpy as np
 from paddleocr import TextRecognition
 from deep_translator import GoogleTranslator
 
-CLASS_MODELS = {
+# The names in app.py's CLASS_MAP, and what this PaddleOCR build actually offers.
+# 'ch_PP-OCRv4_mobile_rec' and 'bangla_PP-OCRv3_mobile_rec' are not registered;
+# app.py catches that and stores None, so those classes silently recognise nothing.
+DEPLOYED_NAMES = {
     0: "arabic_PP-OCRv3_mobile_rec", 1: "en_PP-OCRv3_mobile_rec",
     2: "ch_PP-OCRv4_mobile_rec",     3: "korean_PP-OCRv3_mobile_rec",
     4: "japan_PP-OCRv3_mobile_rec",  5: "bangla_PP-OCRv3_mobile_rec",
     6: "devanagari_PP-OCRv3_mobile_rec", 7: "en_PP-OCRv3_mobile_rec",
 }
+SUBSTITUTES = {
+    "ch_PP-OCRv4_mobile_rec": "PP-OCRv4_mobile_rec",
+    "bangla_PP-OCRv3_mobile_rec": "devanagari_PP-OCRv3_mobile_rec",
+}
+
 engines = {}
+resolved = {}
+for cls, wanted in DEPLOYED_NAMES.items():
+    for candidate in (wanted, SUBSTITUTES.get(wanted)):
+        if candidate is None:
+            continue
+        if candidate in engines:
+            resolved[cls] = candidate
+            break
+        try:
+            engines[candidate] = TextRecognition(model_name=candidate, device="cpu")
+            resolved[cls] = candidate
+            break
+        except Exception as error:
+            print(f"class {cls}: {candidate!r} unavailable ({type(error).__name__})")
+    else:
+        raise RuntimeError(f"no recogniser available for class {cls}")
+
+print()
+for cls, wanted in DEPLOYED_NAMES.items():
+    note = "" if resolved[cls] == wanted else f"   <- substituted for {wanted}"
+    print(f"class {cls}: {resolved[cls]}{note}")
 
 def recogniser_for(cls):
-    name = CLASS_MODELS[int(cls)]
-    if name not in engines:
-        engines[name] = TextRecognition(model_name=name, device="cpu")
-    return engines[name]
+    return engines[resolved[int(cls)]]
 
 def crop(image, quad):
     pts = np.asarray(quad, dtype=int)
