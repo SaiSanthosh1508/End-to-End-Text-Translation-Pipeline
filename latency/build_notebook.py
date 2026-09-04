@@ -71,6 +71,28 @@ detector = YOLO(str(weights))
 params = sum(p.numel() for p in detector.model.parameters())
 print(f"{{params/1e6:.2f}}M parameters")"""),
 
+    ("markdown", """### Is this GPU usable?
+
+Kaggle offers P100 as well as T4, and its PyTorch build supports sm_70 and above.
+A P100 is sm_60, so selecting it makes every CUDA call fail with "no kernel image
+is available". Checking here means a wrong accelerator costs the GPU column
+rather than the whole run."""),
+
+    ("code", """arches = torch.cuda.get_arch_list()
+if torch.cuda.is_available():
+    name = torch.cuda.get_device_name(0)
+    major, minor = torch.cuda.get_device_capability(0)
+    usable = f"sm_{major}{minor}" in arches
+    print(f"{name}  sm_{major}{minor}  usable: {usable}")
+else:
+    name, usable = None, False
+    print("no GPU visible")
+
+DEVICES = ["cuda:0", "cpu"] if usable else ["cpu"]
+if not usable:
+    print(f"This PyTorch supports {' '.join(arches)}.")
+    print("Timing CPU only. For GPU numbers set Accelerator to GPU T4 and re-run.")"""),
+
     ("markdown", "## 2. Images"),
 
     ("code", """import itertools
@@ -156,23 +178,23 @@ def run(device):
     return summarise(runs)
 
 results = {}
-for device in ("cuda:0", "cpu"):
+for device in DEVICES:
     print(f"\\n===== {device} =====", flush=True)
     results[device] = run(device)
     print(as_table(results[device]))"""),
 
     ("markdown", "## 5. The table for the paper"),
 
-    ("code", """print(f"{'stage':12s} {'GPU (T4)':>18s} {'CPU (4 vCPU)':>18s}")
-print("-" * 50)
+    ("code", """header = "".join(f"{d:>20s}" for d in DEVICES)
+print(f"{'stage':12s}{header}")
+print("-" * (12 + 20 * len(DEVICES)))
 for stage in ("detect", "crop", "recognise", "translate", "total"):
-    g, gs = results["cuda:0"][stage]
-    c, cs = results["cpu"][stage]
-    print(f"{stage:12s} {g:10.1f} +/- {gs:5.1f} {c:10.1f} +/- {cs:5.1f}")
+    cells = "".join(f"{results[d][stage][0]:11.1f} +/-{results[d][stage][1]:5.1f}" for d in DEVICES)
+    print(f"{stage:12s}{cells}")
 print()
-print(f"detection only, GPU: {results['cuda:0']['detect'][0]:.0f} ms")
-print(f"detection only, CPU: {results['cpu']['detect'][0]:.0f} ms")
-print(f"end-to-end,     CPU: {results['cpu']['total'][0]:.0f} ms")"""),
+for d in DEVICES:
+    print(f"detection only, {d:7s} {results[d]['detect'][0]:7.0f} ms")
+    print(f"end-to-end,     {d:7s} {results[d]['total'][0]:7.0f} ms")"""),
 
     ("markdown", """## How to read this
 
