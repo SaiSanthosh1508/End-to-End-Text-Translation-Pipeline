@@ -161,7 +161,7 @@ if subprocess.run(["python", "ablation/verify_install.py"],
 # Accepts either shape of attached input: a previous session's saved output, or a
 # dataset written by push_snapshot.py. Only <arm>_seed<n> directories are taken,
 # so an unrelated attached dataset cannot pollute the run set.
-RUN_DIR = re.compile(r"^(legacy|fixed)_seed\d+$")
+RUN_DIR = re.compile(r"^(a1_stock|legacy|fixed)_seed\d+$")
 
 candidates = {
     hit.parent
