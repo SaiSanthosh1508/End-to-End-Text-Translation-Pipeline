@@ -395,6 +395,19 @@ assert any(texts), "recogniser returned nothing on a real test image\""""),
 `stock` is `a1_stock.yaml` - YOLOv11s-OBB as shipped. `paper` is `full_legacy.yaml`,
 the deployed BiFPN + MS-CBAM + cross-attention model. Both get `nc=1`."""),
 
+    ("markdown", """### Confirm both arms are the deployed size
+
+Ultralytics picks the scale from the file stem. A stem without `yolo11s` falls back
+to nano, which is how an earlier run compared a 10.5M checkpoint against a 2.7M
+baseline. This builds both arms and checks the parameter count before training."""),
+
+    ("code", """from rects_control.detectors import ARMS, arm_config, assert_scale
+
+for arm in sorted(ARMS):
+    cfg = arm_config(arm, Path(PROJECT) / "configs")
+    print(f"{arm:6s} {cfg.name:26s} {assert_scale(cfg):>11,} parameters")
+print("deployed best.pt: 10,504,551 parameters")"""),
+
     ("code", """from rects_control.detectors import adopt_published, train
 
 if TRAIN_PAPER_ARM:
