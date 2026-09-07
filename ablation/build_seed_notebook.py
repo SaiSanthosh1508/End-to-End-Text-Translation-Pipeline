@@ -27,8 +27,14 @@ CELLS: list[tuple[str, str]] = [
 
 Two arms, one seed, about **9.2 h** on **GPU T4 x2**.
 
-* `a1_stock` is Table 8 row 1, unmodified YOLOv11s-OBB.
-* `legacy` is Table 8 row 6, the deployed model, as trained for `best.pt`.
+* `a1_stock` is Table 8 row 1, unmodified YOLOv11s-OBB (9.72M parameters).
+* `legacy` is Table 8 row 6, the deployed model as trained for `best.pt`
+  (10.50M parameters).
+
+Both are built at the **s** scale. Ultralytics reads the scale from the file stem, so
+the configs are copied to `<arm>_yolo11s.yaml` first, and the parameter count is
+checked against the deployed model before any epoch runs. Without this the runs
+silently trained nano networks a quarter of the size.
 
 Seed 42 already exists for both. Run this notebook **once per account** with a
 different `SEED`, and the three seeds together give the mean and standard deviation

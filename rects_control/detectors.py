@@ -20,6 +20,13 @@ ARMS = {
     "paper": "full_legacy.yaml",    # BiFPN + MS-CBAM + cross-attention, as deployed
 }
 RECTS_CLASSES = 1
+SCALE_TAG = "11s"
+# Ultralytics reads the scale from the file *stem* via
+# re.search(r"yolo(e-)?[v]?\d+([nslmx])", stem). A stem without it silently falls
+# back to the first entry in `scales:`, which is nano. That mistake trained a
+# 2.7M-parameter baseline against the 10.5M deployed model.
+DEPLOYED_PARAMS = 10_504_551
+PARAM_TOLERANCE = 0.15
 
 TRAIN_ARGS = {
     "epochs": 100,
@@ -56,9 +63,27 @@ def arm_config(arm: str, out_dir: Path) -> Path:
     spec["nc"] = RECTS_CLASSES
 
     out_dir.mkdir(parents=True, exist_ok=True)
-    target = out_dir / f"{arm}_rects.yaml"
+    target = out_dir / f"{arm}_rects_yolo{SCALE_TAG}.yaml"
     target.write_text(yaml.dump(spec, default_flow_style=False, sort_keys=False))
     return target
+
+
+def assert_scale(config: Path) -> int:
+    """Build the model and check its size before any epoch runs.
+
+    The scale is selected from the filename, so a rename can silently swap the
+    network for one a quarter of the size. Returns the parameter count.
+    """
+    from ultralytics import YOLO
+
+    params = sum(p.numel() for p in YOLO(str(config)).model.parameters())
+    if abs(params - DEPLOYED_PARAMS) / DEPLOYED_PARAMS > PARAM_TOLERANCE:
+        raise RuntimeError(
+            f"{config.name} built {params:,} parameters; expected within "
+            f"{PARAM_TOLERANCE:.0%} of the deployed {DEPLOYED_PARAMS:,}. "
+            "Check that the filename stem contains 'yolo11s'."
+        )
+    return params
 
 
 def train(arm: str, data: Path, project: Path, seed: int, device: str = "0,1") -> Path | None:
@@ -76,7 +101,9 @@ def train(arm: str, data: Path, project: Path, seed: int, device: str = "0,1") -
         return best
 
     try:
-        YOLO(str(arm_config(arm, project / "configs"))).train(
+        config = arm_config(arm, project / "configs")
+        print(f"{name}: {assert_scale(config):,} parameters")
+        YOLO(str(config)).train(
             data=str(data), project=str(project), name=name,
             seed=seed, device=device, **TRAIN_ARGS,
         )

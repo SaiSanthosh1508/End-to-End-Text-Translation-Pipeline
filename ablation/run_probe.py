@@ -22,6 +22,14 @@ from pathlib import Path
 from ultralytics import YOLO
 
 CONFIGS = Path(__file__).parent / "configs"
+
+# Ultralytics reads the scale from the file stem via
+# re.search(r"yolo(e-)?[v]?\d+([nslmx])", stem). A stem without it silently falls back
+# to the first entry in `scales:`, which is nano; that trained 2.9M-parameter networks
+# against a 10.5M deployed model for eighteen GPU-hours before anyone noticed.
+SCALE_TAG = "yolo11s"
+DEPLOYED_PARAMS = 10_504_551
+PARAM_TOLERANCE = 0.15
 ARMS = {
     # Table 8, one component added per row. Row 6 is the deployed model.
     "a1_stock": "a1_stock.yaml",
@@ -63,8 +71,29 @@ def snapshot(run_dir: Path, into: Path) -> None:
             shutil.copyfile(source, target / filename)
 
 
+def scaled_config(arm: str, into: Path) -> Path:
+    """Copy an arm's config to a stem Ultralytics will read the scale from."""
+    into.mkdir(parents=True, exist_ok=True)
+    target = into / f"{arm}_{SCALE_TAG}.yaml"
+    target.write_text((CONFIGS / ARMS[arm]).read_text(), encoding="utf-8")
+    return target
+
+
+def check_scale(config: Path) -> int:
+    """Fail before training if the built network is not the deployed size."""
+    params = sum(p.numel() for p in YOLO(str(config)).model.parameters())
+    if abs(params - DEPLOYED_PARAMS) / DEPLOYED_PARAMS > PARAM_TOLERANCE:
+        raise RuntimeError(
+            f"{config.name} built {params:,} parameters, expected within "
+            f"{PARAM_TOLERANCE:.0%} of the deployed {DEPLOYED_PARAMS:,}"
+        )
+    return params
+
+
 def train_one(arm: str, seed: int, opts: argparse.Namespace) -> None:
-    YOLO(str(CONFIGS / ARMS[arm])).train(
+    config = scaled_config(arm, opts.project / "configs")
+    print(f"  {config.name}: {check_scale(config):,} parameters")
+    YOLO(str(config)).train(
         data=opts.data,
         project=str(opts.project),
         name=f"{arm}_seed{seed}",
